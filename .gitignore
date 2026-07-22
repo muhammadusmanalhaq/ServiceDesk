@@ -1,0 +1,35 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## User secrets (never commit)
+**/secrets.json
+**/.secrets/
+
+## Environment files
+.env
+.env.local
+.env.*.local
+
+## Docker
+docker-compose.override.yml
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Rider / VSCode / VS
+.idea/
+.vscode/settings.json
+*.DotSettings.user
+
+## NuGet
+*.nupkg
+.nuget/
+
+## Published output
+publish/
+artifacts/
