@@ -1,0 +1,406 @@
+  Determining projects to restore...
+/home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/src/ServiceDesk.Api/ServiceDesk.Api.csproj : warning NU1902: Package 'MailKit' 4.7.1.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr [/home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/tests/ServiceDesk.Tests/ServiceDesk.Tests.csproj]
+  All projects are up-to-date for restore.
+/home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/src/ServiceDesk.Api/ServiceDesk.Api.csproj : warning NU1902: Package 'MailKit' 4.7.1.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr
+  ServiceDesk.Api -> /home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/src/ServiceDesk.Api/bin/Debug/net8.0/ServiceDesk.Api.dll
+  ServiceDesk.Tests -> /home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/tests/ServiceDesk.Tests/bin/Debug/net8.0/ServiceDesk.Tests.dll
+Test run for /home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/tests/ServiceDesk.Tests/bin/Debug/net8.0/ServiceDesk.Tests.dll (.NETCoreApp,Version=v8.0)
+Microsoft (R) Test Execution Command Line Tool Version 17.8.0 (x64)
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/home/muhammadusmanalhaq/Desktop/Enterprise SaaS Project/ServiceDesk/tests/ServiceDesk.Tests/bin/Debug/net8.0/ServiceDesk.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.5+1caef2f33e (64-bit .NET 8.0.29)
+[xUnit.net 00:00:00.86]   Discovering: ServiceDesk.Tests
+[xUnit.net 00:00:00.89]   Discovered:  ServiceDesk.Tests
+[xUnit.net 00:00:00.89]   Starting:    ServiceDesk.Tests
+[testcontainers.org 00:00:00.13] Connected to Docker:
+  Host: unix:///var/run/docker.sock
+  Server Version: 29.6.2
+  Kernel Version: 7.0.11-76070011-generic
+  API Version: 1.55
+  Operating System: Pop!_OS 24.04 LTS
+  Total Memory: 19.23 GB
+[testcontainers.org 00:00:00.28] Docker container be1c441be13a created
+[testcontainers.org 00:00:00.32] Start Docker container be1c441be13a
+[testcontainers.org 00:00:00.42] Wait for Docker container be1c441be13a to complete readiness checks
+[testcontainers.org 00:00:01.45] Docker container be1c441be13a ready
+[testcontainers.org 00:00:01.58] Docker container 13df41972a2c created
+[testcontainers.org 00:00:01.59] Start Docker container 13df41972a2c
+[testcontainers.org 00:00:01.68] Wait for Docker container 13df41972a2c to complete readiness checks
+[testcontainers.org 00:00:01.69] Execute "pg_isready --host localhost --dbname servicedesk --username postgres" at Docker container 13df41972a2c
+[testcontainers.org 00:00:02.77] Execute "pg_isready --host localhost --dbname servicedesk --username postgres" at Docker container 13df41972a2c
+[testcontainers.org 00:00:02.83] Docker container 13df41972a2c ready
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@__normalizedName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetRoles" ("Id", "ConcurrencyStamp", "Name", "NormalizedName")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetRoles" ("Id", "ConcurrencyStamp", "Name", "NormalizedName")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetRoles" ("Id", "ConcurrencyStamp", "Name", "NormalizedName")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedUserName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedUserName" = @__normalizedUserName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = Boolean), @p6='?', @p7='?' (DbType = Boolean), @p8='?' (DbType = DateTime), @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Boolean), @p14='?', @p15='?' (DbType = Boolean), @p16='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetUsers" ("Id", "AccessFailedCount", "ConcurrencyStamp", "DepartmentId", "Email", "EmailConfirmed", "FullName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedRoleName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedRoleName_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__p_0='?', @__p_1='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", a."RoleId"
+      FROM "AspNetUserRoles" AS a
+      WHERE a."UserId" = @__p_0 AND a."RoleId" = @__p_1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedRoleName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedRoleName_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedUserName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedUserName" = @__normalizedUserName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p18='?', @p2='?' (DbType = Int32), @p3='?', @p19='?', @p4='?' (DbType = Guid), @p5='?', @p6='?' (DbType = Boolean), @p7='?', @p8='?' (DbType = Boolean), @p9='?' (DbType = DateTime), @p10='?', @p11='?', @p12='?', @p13='?', @p14='?' (DbType = Boolean), @p15='?', @p16='?' (DbType = Boolean), @p17='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetUserRoles" ("RoleId", "UserId")
+      VALUES (@p0, @p1);
+      UPDATE "AspNetUsers" SET "AccessFailedCount" = @p2, "ConcurrencyStamp" = @p3, "DepartmentId" = @p4, "Email" = @p5, "EmailConfirmed" = @p6, "FullName" = @p7, "LockoutEnabled" = @p8, "LockoutEnd" = @p9, "NormalizedEmail" = @p10, "NormalizedUserName" = @p11, "PasswordHash" = @p12, "PhoneNumber" = @p13, "PhoneNumberConfirmed" = @p14, "SecurityStamp" = @p15, "TwoFactorEnabled" = @p16, "UserName" = @p17
+      WHERE "Id" = @p18 AND "ConcurrencyStamp" = @p19;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedUserName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedUserName" = @__normalizedUserName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = Boolean), @p6='?', @p7='?' (DbType = Boolean), @p8='?' (DbType = DateTime), @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Boolean), @p14='?', @p15='?' (DbType = Boolean), @p16='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetUsers" ("Id", "AccessFailedCount", "ConcurrencyStamp", "DepartmentId", "Email", "EmailConfirmed", "FullName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedRoleName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedRoleName_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?', @__p_1='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", a."RoleId"
+      FROM "AspNetUserRoles" AS a
+      WHERE a."UserId" = @__p_0 AND a."RoleId" = @__p_1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedRoleName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedRoleName_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedUserName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedUserName" = @__normalizedUserName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p18='?', @p2='?' (DbType = Int32), @p3='?', @p19='?', @p4='?' (DbType = Guid), @p5='?', @p6='?' (DbType = Boolean), @p7='?', @p8='?' (DbType = Boolean), @p9='?' (DbType = DateTime), @p10='?', @p11='?', @p12='?', @p13='?', @p14='?' (DbType = Boolean), @p15='?', @p16='?' (DbType = Boolean), @p17='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetUserRoles" ("RoleId", "UserId")
+      VALUES (@p0, @p1);
+      UPDATE "AspNetUsers" SET "AccessFailedCount" = @p2, "ConcurrencyStamp" = @p3, "DepartmentId" = @p4, "Email" = @p5, "EmailConfirmed" = @p6, "FullName" = @p7, "LockoutEnabled" = @p8, "LockoutEnd" = @p9, "NormalizedEmail" = @p10, "NormalizedUserName" = @p11, "PasswordHash" = @p12, "PhoneNumber" = @p13, "PhoneNumberConfirmed" = @p14, "SecurityStamp" = @p15, "TwoFactorEnabled" = @p16, "UserName" = @p17
+      WHERE "Id" = @p18 AND "ConcurrencyStamp" = @p19;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__normalizedUserName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedUserName" = @__normalizedUserName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = Boolean), @p6='?', @p7='?' (DbType = Boolean), @p8='?' (DbType = DateTime), @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Boolean), @p14='?', @p15='?' (DbType = Boolean), @p16='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetUsers" ("Id", "AccessFailedCount", "ConcurrencyStamp", "DepartmentId", "Email", "EmailConfirmed", "FullName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedRoleName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedRoleName_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?', @__p_1='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", a."RoleId"
+      FROM "AspNetUserRoles" AS a
+      WHERE a."UserId" = @__p_0 AND a."RoleId" = @__p_1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedRoleName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM "AspNetRoles" AS a
+      WHERE a."NormalizedName" = @__normalizedRoleName_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedUserName_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedUserName" = @__normalizedUserName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."DepartmentId", a."Email", a."EmailConfirmed", a."FullName", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p18='?', @p2='?' (DbType = Int32), @p3='?', @p19='?', @p4='?' (DbType = Guid), @p5='?', @p6='?' (DbType = Boolean), @p7='?', @p8='?' (DbType = Boolean), @p9='?' (DbType = DateTime), @p10='?', @p11='?', @p12='?', @p13='?', @p14='?' (DbType = Boolean), @p15='?', @p16='?' (DbType = Boolean), @p17='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AspNetUserRoles" ("RoleId", "UserId")
+      VALUES (@p0, @p1);
+      UPDATE "AspNetUsers" SET "AccessFailedCount" = @p2, "ConcurrencyStamp" = @p3, "DepartmentId" = @p4, "Email" = @p5, "EmailConfirmed" = @p6, "FullName" = @p7, "LockoutEnabled" = @p8, "LockoutEnd" = @p9, "NormalizedEmail" = @p10, "NormalizedUserName" = @p11, "PasswordHash" = @p12, "PhoneNumber" = @p13, "PhoneNumberConfirmed" = @p14, "SecurityStamp" = @p15, "TwoFactorEnabled" = @p16, "UserName" = @p17
+      WHERE "Id" = @p18 AND "ConcurrencyStamp" = @p19;
+info: Hangfire.PostgreSql.PostgreSqlStorage[0]
+      Start installing Hangfire SQL objects...
+info: Hangfire.PostgreSql.PostgreSqlStorage[0]
+      Hangfire SQL objects installed.
+info: Hangfire.BackgroundJobServer[0]
+      Starting Hangfire Server using job storage: 'PostgreSQL Server: Host: 127.0.0.1, DB: servicedesk, Schema: hangfire'
+info: Hangfire.BackgroundJobServer[0]
+      Using the following options for PostgreSQL job storage:
+info: Hangfire.BackgroundJobServer[0]
+          Queue poll interval: 00:00:15.
+info: Hangfire.BackgroundJobServer[0]
+          Invisibility timeout: 00:30:00.
+info: Hangfire.BackgroundJobServer[0]
+          Use sliding invisibility timeout: False.
+info: Hangfire.BackgroundJobServer[0]
+      Using the following options for Hangfire Server:
+          Worker count: 2
+          Listening queues: 'default'
+          Shutdown timeout: 00:00:15
+          Schedule polling interval: 00:00:15
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server pop-os:35447:5df4f0dd successfully announced in 8.2739 ms
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server pop-os:35447:5df4f0dd is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server pop-os:35447:5df4f0dd all the dispatchers started
+[RLS DEBUG] Tickets Policy: ((current_setting('app.current_role'::text, true) = 'Admin'::text) OR (("DepartmentId")::text = current_setting('app.current_department_id'::text, true)))
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+[RLS DEBUG] deptClaim: '0828a0f8-cd00-429a-a411-67c312895ff9', roleClaim: 'Agent'
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = 05f1cd4e-b64a-4004-8a26-8808e9871b4a
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress = test@test.com
+[RLS DEBUG] Claim: http://schemas.microsoft.com/ws/2008/06/identity/claims/role = Agent
+[RLS DEBUG] Claim: department_id = 0828a0f8-cd00-429a-a411-67c312895ff9
+[RLS DEBUG] Claim: full_name = Test User
+[RLS DEBUG] Claim: exp = 1785003139
+[RLS DEBUG] Claim: iss = servicedesk-api
+[RLS DEBUG] Claim: aud = servicedesk-ui
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Title", t."Description", t."Status", t."Priority", t."AssetId", t."DepartmentId", t."AssignedToUserId", t."SlaDeadline", t."SlaBreached", t."CreatedAt"
+      FROM "Tickets" AS t
+[RLS DEBUG] Tickets Policy: ((current_setting('app.current_role'::text, true) = 'Admin'::text) OR (("DepartmentId")::text = current_setting('app.current_department_id'::text, true)))
+  Passed ServiceDesk.Tests.RlsIntegrationTests.Agent_DeptA_GetTickets_OnlyReturns_DeptATickets [187 ms]
+[RLS DEBUG] deptClaim: 'ab290746-32ce-48b8-8b13-86eca69880ac', roleClaim: 'Agent'
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = 2c1c130a-a1d4-4d30-8156-a464affdc3d1
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress = test@test.com
+[RLS DEBUG] Claim: http://schemas.microsoft.com/ws/2008/06/identity/claims/role = Agent
+[RLS DEBUG] Claim: department_id = ab290746-32ce-48b8-8b13-86eca69880ac
+[RLS DEBUG] Claim: full_name = Test User
+[RLS DEBUG] Claim: exp = 1785003139
+[RLS DEBUG] Claim: iss = servicedesk-api
+[RLS DEBUG] Claim: aud = servicedesk-ui
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AssetId", t."AssignedToUserId", t."CreatedAt", t."DepartmentId", t."Description", t."Priority", t."SlaBreached", t."SlaDeadline", t."Status", t."Title"
+      FROM "Tickets" AS t
+      WHERE t."Id" = @__get_Item_0
+      LIMIT 1
+[RLS DEBUG] Tickets Policy: ((current_setting('app.current_role'::text, true) = 'Admin'::text) OR (("DepartmentId")::text = current_setting('app.current_department_id'::text, true)))
+[RLS DEBUG] deptClaim: 'ead5099f-db62-4403-a47a-ff059af8dc00', roleClaim: 'Manager'
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = a8d860f5-6fbf-4e5f-9039-71c5878b6ac4
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress = test@test.com
+[RLS DEBUG] Claim: http://schemas.microsoft.com/ws/2008/06/identity/claims/role = Manager
+[RLS DEBUG] Claim: department_id = ead5099f-db62-4403-a47a-ff059af8dc00
+[RLS DEBUG] Claim: full_name = Test User
+[RLS DEBUG] Claim: exp = 1785003139
+[RLS DEBUG] Claim: iss = servicedesk-api
+[RLS DEBUG] Claim: aud = servicedesk-ui
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AssetId", t."AssignedToUserId", t."CreatedAt", t."DepartmentId", t."Description", t."Priority", t."SlaBreached", t."SlaDeadline", t."Status", t."Title"
+      FROM "Tickets" AS t
+      WHERE t."Id" = @__get_Item_0
+      LIMIT 1
+[RLS DEBUG] Tickets Policy: ((current_setting('app.current_role'::text, true) = 'Admin'::text) OR (("DepartmentId")::text = current_setting('app.current_department_id'::text, true)))
+[RLS DEBUG] deptClaim: '33a99ced-8e2a-48bf-95c1-4ae8e4f0af38', roleClaim: 'Agent'
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = f34728d0-bdaa-48e0-9949-4a8e2e7a174f
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress = test@test.com
+[RLS DEBUG] Claim: http://schemas.microsoft.com/ws/2008/06/identity/claims/role = Agent
+[RLS DEBUG] Claim: department_id = 33a99ced-8e2a-48bf-95c1-4ae8e4f0af38
+[RLS DEBUG] Claim: full_name = Test User
+[RLS DEBUG] Claim: exp = 1785003139
+[RLS DEBUG] Claim: iss = servicedesk-api
+[RLS DEBUG] Claim: aud = servicedesk-ui
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AssetId", t."AssignedToUserId", t."CreatedAt", t."DepartmentId", t."Description", t."Priority", t."SlaBreached", t."SlaDeadline", t."Status", t."Title"
+      FROM "Tickets" AS t
+      WHERE t."Id" = @__get_Item_0
+      LIMIT 1
+[RLS DEBUG] Tickets Policy: ((current_setting('app.current_role'::text, true) = 'Admin'::text) OR (("DepartmentId")::text = current_setting('app.current_department_id'::text, true)))
+[RLS DEBUG] deptClaim: 'f7f42b79-6c48-4d7d-8544-f68c86a24731', roleClaim: 'Admin'
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = 666561f1-6fcc-43da-bb00-edc8f3a610c6
+[RLS DEBUG] Claim: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress = test@test.com
+[RLS DEBUG] Claim: http://schemas.microsoft.com/ws/2008/06/identity/claims/role = Admin
+[RLS DEBUG] Claim: department_id = f7f42b79-6c48-4d7d-8544-f68c86a24731
+[RLS DEBUG] Claim: full_name = Test User
+[RLS DEBUG] Claim: exp = 1785003139
+[RLS DEBUG] Claim: iss = servicedesk-api
+[RLS DEBUG] Claim: aud = servicedesk-ui
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."AssetId", t."AssignedToUserId", t."CreatedAt", t."DepartmentId", t."Description", t."Priority", t."SlaBreached", t."SlaDeadline", t."Status", t."Title"
+      FROM "Tickets" AS t
+      WHERE t."Id" = @__get_Item_0
+      LIMIT 1
+[testcontainers.org 00:00:05.79] Delete Docker container 13df41972a2c
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server pop-os:35447:5df4f0dd caught stopping signal...
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server pop-os:35447:5df4f0dd All dispatchers stopped
+warn: Hangfire.Server.BackgroundServerProcess[0]
+      Server pop-os:35447:5df4f0dd there was an exception, server may not be removed
+      Npgsql.PostgresException (0x80004005): 57P01: terminating connection due to unexpected postmaster exit
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult()
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+         at Dapper.SqlMapper.ExecuteCommand(IDbConnection cnn, CommandDefinition& command, Action`2 paramReader) in /_/Dapper/SqlMapper.cs:line 2848
+         at Dapper.SqlMapper.ExecuteImpl(IDbConnection cnn, CommandDefinition& command) in /_/Dapper/SqlMapper.cs:line 581
+         at Dapper.SqlMapper.Execute(IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType) in /_/Dapper/SqlMapper.cs:line 452
+         at Hangfire.PostgreSql.PostgreSqlConnection.<>c__DisplayClass20_0.<RemoveServer>b__0(DbConnection connection)
+         at Hangfire.PostgreSql.PostgreSqlStorage.UseConnection[T](DbConnection dedicatedConnection, Func`2 func)
+         at Hangfire.PostgreSql.PostgreSqlConnection.RemoveServer(String serverId)
+         at Hangfire.Server.BackgroundServerProcess.ServerDelete(BackgroundServerContext context, Stopwatch stoppedAt) in C:\projects\hangfire-525\src\Hangfire.Core\Server\BackgroundServerProcess.cs:line 229
+        Exception data:
+          Severity: FATAL
+          SqlState: 57P01
+          MessageText: terminating connection due to unexpected postmaster exit
+          File: be-secure.c
+          Line: 205
+          Routine: secure_read
+[xUnit.net 00:00:06.99]   Finished:    ServiceDesk.Tests
+  Passed ServiceDesk.Tests.RlsIntegrationTests.Agent_DeptA_CannotGet_DeptBTicket_Returns404 [86 ms]
+  Passed ServiceDesk.Tests.RlsIntegrationTests.Manager_DeptA_CannotGet_DeptBTicket_Returns404 [15 ms]
+  Passed ServiceDesk.Tests.RlsIntegrationTests.Agent_DeptA_CannotUpdate_DeptBTicket_Returns404 [23 ms]
+  Passed ServiceDesk.Tests.RlsIntegrationTests.Admin_CanGet_DeptBTicket_Returns200 [23 ms]
+
+Test Run Successful.
+Total tests: 5
+     Passed: 5
+ Total time: 7.4383 Seconds
