@@ -1,4 +1,6 @@
 using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +12,28 @@ using ServiceDesk.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─── Database ─────────────────────────────────────────────────────────────────
-// Connection string: user-secrets locally, Key Vault in production (Milestone 8)
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddHttpContextAccessor();
+
+// Primary AppDbContext — connected as servicedesk_app (non-superuser) with RLS active.
+// IHttpContextAccessor is resolved from DI and injected into the context constructor,
+// where it's used by the SaveChangesAsync audit trail override.
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, opt) =>
+{
+    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+       .AddInterceptors(new RlsTransactionInterceptor(httpContextAccessor));
+});
+
+// System context factory — used ONLY by background jobs and the AuditLogsController.
+// Creates AppDbContext instances connected as postgres (superuser), bypassing RLS.
+builder.Services.AddSingleton<SystemDbContextFactory>();
 
 // ─── ASP.NET Identity ─────────────────────────────────────────────────────────
 builder.Services.AddIdentityCore<ApplicationUser>(opt =>
 {
     opt.Password.RequireDigit = true;
     opt.Password.RequiredLength = 8;
-    opt.Password.RequireUppercase = false; // Relax for dev; tighten for prod if needed
+    opt.Password.RequireUppercase = false;
     opt.Password.RequireNonAlphanumeric = false;
     opt.User.RequireUniqueEmail = true;
 })
@@ -28,8 +42,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(opt =>
 .AddDefaultTokenProviders();
 
 // ─── JWT Authentication ───────────────────────────────────────────────────────
-// Jwt:Key → user-secrets (never in appsettings.json)
-// Jwt:Issuer + Jwt:Audience → appsettings.json (not sensitive)
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException(
         "Jwt:Key is not set. Run: dotnet user-secrets set \"Jwt:Key\" \"<your-secret-key>\"");
@@ -46,15 +58,46 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            // No clock skew — 15-minute tokens should not silently get extra time
             ClockSkew = TimeSpan.Zero
         };
     });
 
 builder.Services.AddAuthorization();
 
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowNextJs", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // ─── Application services ─────────────────────────────────────────────────────
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+
+// ─── Hangfire ─────────────────────────────────────────────────────────────────
+// Hangfire uses the System connection string (postgres superuser) for its own tables.
+// This avoids any RLS interference — Hangfire tables have no RLS policy.
+var hangfireConnStr = builder.Configuration.GetConnectionString("System")
+    ?? builder.Configuration.GetConnectionString("Default")!;
+
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(hangfireConnStr)));
+
+// Add the Hangfire processing server — this is what actually picks up and runs jobs
+builder.Services.AddHangfireServer(opt =>
+{
+    opt.WorkerCount = 2; // Keep low for a single-instance API
+    opt.Queues = ["default"];
+});
 
 // ─── Controllers + Swagger ───────────────────────────────────────────────────
 builder.Services.AddControllers();
@@ -63,7 +106,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "ServiceDesk API", Version = "v1" });
 
-    // Wire Swagger to send Bearer tokens — makes manual testing much easier
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -110,9 +152,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Order matters: Authentication must come before Authorization
+// Use CORS before Auth
+app.UseCors("AllowNextJs");
+
+// Order matters: Authentication must come before Authorization (and before Hangfire dashboard)
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ─── Hangfire dashboard ───────────────────────────────────────────────────────
+// Locked behind Admin role — an open Hangfire dashboard is a real vulnerability.
+// The DashboardAuthFilter checks the JWT claims exactly as our controllers do.
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new HangfireDashboardAuthFilter()],
+    AppPath = "/swagger" // "Back to site" link goes to Swagger
+});
+
+// ─── Register recurring jobs ──────────────────────────────────────────────────
+// This is idempotent — safe to call on every startup. Hangfire stores the
+// schedule in Postgres, so it survives restarts.
+RecurringJob.AddOrUpdate<SlaCheckJob>(
+    recurringJobId: "sla-breach-check",
+    methodCall: job => job.RunAsync(),
+    cronExpression: Cron.MinuteInterval(5),
+    options: new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Utc
+    });
 
 app.MapControllers();
 
@@ -121,3 +187,5 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = Dat
    .AllowAnonymous();
 
 app.Run();
+
+public partial class Program { }

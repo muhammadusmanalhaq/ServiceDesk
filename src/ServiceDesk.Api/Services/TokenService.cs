@@ -23,11 +23,11 @@ public class TokenService : ITokenService
         // — it's not a second permission check, it IS the permission check.
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Email, user.Email!),
-            new(ClaimTypes.Role, role),
+            new(ClaimTypes.NameIdentifier, user.Id ?? ""),
+            new(ClaimTypes.Email, user.Email ?? ""),
+            new(ClaimTypes.Role, role ?? ""),
             new("department_id", user.DepartmentId.ToString()),
-            new("full_name", user.FullName)
+            new("full_name", user.FullName ?? "")
         };
 
         var token = new JwtSecurityToken(

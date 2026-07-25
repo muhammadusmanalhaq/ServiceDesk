@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C58431BA-353
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Api", "src\ServiceDesk.Api\ServiceDesk.Api.csproj", "{99F30371-DEAD-4A89-8A9C-828994E03854}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B84D5E05-2E85-4727-A766-10165E98E1F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Tests", "tests\ServiceDesk.Tests\ServiceDesk.Tests.csproj", "{1C77872C-B71C-4DDB-8CC9-1B88F7E1781E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{99F30371-DEAD-4A89-8A9C-828994E03854}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99F30371-DEAD-4A89-8A9C-828994E03854}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99F30371-DEAD-4A89-8A9C-828994E03854}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C77872C-B71C-4DDB-8CC9-1B88F7E1781E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C77872C-B71C-4DDB-8CC9-1B88F7E1781E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C77872C-B71C-4DDB-8CC9-1B88F7E1781E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C77872C-B71C-4DDB-8CC9-1B88F7E1781E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{99F30371-DEAD-4A89-8A9C-828994E03854} = {C58431BA-3535-43D2-BBD1-3FDEBB8B3F08}
+		{1C77872C-B71C-4DDB-8CC9-1B88F7E1781E} = {B84D5E05-2E85-4727-A766-10165E98E1F5}
 	EndGlobalSection
 EndGlobal
