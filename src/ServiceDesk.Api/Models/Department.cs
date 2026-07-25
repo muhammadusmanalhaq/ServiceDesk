@@ -12,4 +12,6 @@ public class Department
 
     // Navigation properties — expanded with Assets and Tickets in Milestone 3
     public ICollection<ApplicationUser> Users { get; set; } = [];
+    public ICollection<Asset> Assets { get; set; } = [];
+    public ICollection<Ticket> Tickets { get; set; } = [];
 }
