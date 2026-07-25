@@ -16,14 +16,16 @@ public class DepartmentsController : ControllerBase
     /// <summary>List all departments — used during registration to pick a valid DepartmentId.</summary>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<DepartmentDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var depts = await _db.Departments
             .OrderBy(d => d.Name)
-            .Select(d => new { d.Id, d.Name })
+            .Select(d => new DepartmentDto(d.Id, d.Name))
             .ToListAsync();
 
         return Ok(depts);
     }
 }
+
+public record DepartmentDto(Guid Id, string Name);
