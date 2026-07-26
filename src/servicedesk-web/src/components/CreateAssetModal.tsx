@@ -1,24 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { apiFetch } from "@/lib/apiClient";
-import { components } from "@/lib/api-types";
 
-type AssetResponse = components["schemas"]["AssetResponse"];
-
-interface EditAssetModalProps {
+interface CreateAssetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAssetUpdated: () => void;
-  asset: AssetResponse | null;
+  onAssetCreated: () => void;
   departments: Record<string, string>;
 }
 
-export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departments }: EditAssetModalProps) {
+export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments }: CreateAssetModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,18 +24,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
     status: "Active",
   });
 
-  useEffect(() => {
-    if (asset && isOpen) {
-      setFormData({
-        name: asset.name || "",
-        departmentId: asset.departmentId || "",
-        status: asset.status || "Active",
-      });
-      setError(null);
-    }
-  }, [asset, isOpen]);
-
-  if (!isOpen || !asset) return null;
+  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,28 +32,34 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
     setError(null);
 
     try {
-      // Typically there would be a PUT endpoint like /api/assets/{id}. Since we might not have one,
-      // I will mock it or call it if it exists. If it fails, I'll still close it for demo purposes.
-      const res = await apiFetch.PUT("/api/assets/{id}", {
-        params: { path: { id: asset.id as string } },
+      const stored = localStorage.getItem("service_desk_user");
+      let token = "";
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        token = parsed.accessToken || "";
+      }
+
+      const res = await apiFetch.POST("/api/assets", {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: {
           name: formData.name,
           departmentId: formData.departmentId || undefined,
           status: formData.status
-        }
+        } as any
       });
 
       if (res.error) {
-        setError(res.error.title || "Failed to update asset");
+        setError(res.error.title || "Failed to create asset");
       } else {
-        onAssetUpdated();
+        setFormData({ name: "", departmentId: "", status: "Active" });
+        onAssetCreated();
         onClose();
       }
     } catch (err) {
       setError("An unexpected error occurred.");
-      // Just close it on fail for demo since PUT might not be implemented
-      onAssetUpdated();
-      onClose();
     } finally {
       setIsSubmitting(false);
     }
@@ -78,7 +69,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 w-screen h-screen m-0 p-0 top-0 left-0">
       <div className="bg-slate-900 rounded-xl shadow-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto border border-slate-800">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-slate-100">Edit Asset</h2>
+          <h2 className="text-xl font-bold text-slate-100">Create Asset</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <X className="h-5 w-5" />
           </button>
@@ -132,7 +123,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
           <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100">Cancel</Button>
             <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : "Save Changes"}
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Asset"}
             </Button>
           </div>
         </form>

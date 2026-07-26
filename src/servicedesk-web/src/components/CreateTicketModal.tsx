@@ -50,6 +50,13 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
     setError(null);
 
     try {
+      const stored = localStorage.getItem("service_desk_user");
+      let token = "";
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        token = parsed.accessToken || "";
+      }
+
       const payload: CreateTicketRequest = {
         title: formData.title,
         description: formData.description,
@@ -59,6 +66,10 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
       };
 
       const res = await apiFetch.POST("/api/tickets", {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: payload
       });
 
@@ -77,68 +88,67 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 m-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 w-screen h-screen m-0 p-0 top-0 left-0">
+      <div className="bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto border border-slate-800">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Create New Ticket</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <h2 className="text-xl font-bold text-slate-100">Create New Ticket</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-red-500 text-sm p-2 bg-red-50 dark:bg-red-900/20 rounded">{error}</div>}
+          {error && <div className="text-red-500 text-sm p-2 bg-red-900/20 rounded">{error}</div>}
           
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="text-slate-300">Title</Label>
             <Input 
               id="title" 
               required 
               value={formData.title} 
               onChange={e => setFormData({...formData, title: e.target.value})} 
-              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700" 
+              className="bg-slate-800 border-slate-700 text-slate-100 focus:ring-indigo-500" 
               placeholder="E.g., Cannot access email" 
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-slate-300">Description</Label>
             <textarea 
               id="description" 
               required 
               rows={3} 
               value={formData.description} 
               onChange={e => setFormData({...formData, description: e.target.value})} 
-              className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
               placeholder="Describe the issue in detail..." 
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
+              <Label htmlFor="department" className="text-slate-300">Department</Label>
               <select 
                 id="department" 
                 value={formData.departmentId} 
                 onChange={e => setFormData({...formData, departmentId: e.target.value})}
-                className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">(Select Department)</option>
-                {departments.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
+                <option value="11111111-1111-1111-1111-111111111111">IT</option>
+                <option value="22222222-2222-2222-2222-222222222222">Operations</option>
+                <option value="33333333-3333-3333-3333-333333333333">Field Support</option>
               </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority" className="text-slate-300">Priority</Label>
               <select 
                 id="priority" 
                 required
                 value={formData.priority} 
                 onChange={e => setFormData({...formData, priority: e.target.value})}
-                className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -149,12 +159,12 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="asset">Related Asset (Optional)</Label>
+            <Label htmlFor="asset" className="text-slate-300">Related Asset (Optional)</Label>
             <select 
               id="asset" 
               value={formData.assetId} 
               onChange={e => setFormData({...formData, assetId: e.target.value})}
-              className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-md border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">(None)</option>
               {assets.map(a => (
@@ -163,8 +173,8 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
             </select>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100">Cancel</Button>
             <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Ticket"}
             </Button>

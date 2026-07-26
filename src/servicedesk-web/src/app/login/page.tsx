@@ -52,8 +52,8 @@ export default function LoginPage() {
             Enter your credentials to access your workspace
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-5 mt-4">
+        <form onSubmit={handleLogin} className="bg-transparent">
+          <CardContent className="space-y-5 mt-4 bg-transparent">
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg flex items-center gap-2 text-sm">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-slate-950/50 border-slate-700 text-slate-100 focus:ring-indigo-500 focus:border-indigo-500"
+                className="bg-transparent border-slate-700 text-slate-100 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div className="space-y-2">
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-slate-950/50 border-slate-700 text-slate-100 focus:ring-indigo-500 focus:border-indigo-500"
+                className="bg-transparent border-slate-700 text-slate-100 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </CardContent>

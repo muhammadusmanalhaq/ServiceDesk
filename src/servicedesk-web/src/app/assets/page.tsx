@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 
 import { EditAssetModal } from "@/components/EditAssetModal";
+import { CreateAssetModal } from "@/components/CreateAssetModal";
 
 type AssetResponse = components["schemas"]["AssetResponse"];
 
@@ -26,6 +27,7 @@ export default function AssetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedAsset, setSelectedAsset] = useState<AssetResponse | null>(null);
+  const [isAddAssetModalOpen, setIsAddAssetModalOpen] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -65,19 +67,24 @@ export default function AssetsPage() {
           <p className="text-slate-500 dark:text-slate-400 transition-colors">Manage and track company hardware and software.</p>
         </div>
         <div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
+          <Button onClick={() => setIsAddAssetModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Asset
           </Button>
         </div>
       </div>
 
+      <CreateAssetModal
+        isOpen={isAddAssetModalOpen}
+        onClose={() => setIsAddAssetModalOpen(false)}
+        onAssetCreated={() => fetchData()}
+        departments={departments}
+      />
+
       <EditAssetModal
         isOpen={!!selectedAsset}
         onClose={() => setSelectedAsset(null)}
-        onAssetUpdated={() => {
-          fetchData();
-        }}
+        onAssetUpdated={() => fetchData()}
         asset={selectedAsset}
         departments={departments}
       />
