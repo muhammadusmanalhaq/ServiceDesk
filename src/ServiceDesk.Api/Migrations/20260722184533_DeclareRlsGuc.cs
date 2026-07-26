@@ -18,14 +18,14 @@ namespace ServiceDesk.Api.Migrations
             // ALTER DATABASE SET declares the parameter with an empty default, making it
             // recognised on every subsequent connection to this database.
             migrationBuilder.Sql(
-                "ALTER DATABASE servicedesk SET \"app.current_department_id\" = '';");
+                "DO $$ BEGIN EXECUTE 'ALTER DATABASE ' || quote_ident(current_database()) || ' SET \"app.current_department_id\" = '''''; END $$;");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
-                "ALTER DATABASE servicedesk RESET \"app.current_department_id\";");
+                "DO $$ BEGIN EXECUTE 'ALTER DATABASE ' || quote_ident(current_database()) || ' RESET \"app.current_department_id\"'; END $$;");
         }
     }
 }
