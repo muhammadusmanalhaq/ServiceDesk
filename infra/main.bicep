@@ -109,6 +109,10 @@ resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
               secretRef: 'db-connection-system'
             }
             {
+              name: 'ASPNETCORE_URLS'
+              value: 'http://0.0.0.0:8080'
+            }
+            {
               name: 'Jwt__Key'
               secretRef: 'jwt-key'
             }
