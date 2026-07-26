@@ -115,9 +115,9 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Middle Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart 1: Tickets by Status */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col min-h-[350px] transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col min-h-[350px] transition-colors lg:col-span-1">
           <div className="mb-4">
             <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">Tickets by Status</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">Current active workload distribution</p>
@@ -150,6 +150,70 @@ export default function Dashboard() {
                 No tickets found.
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Table: Recent Tickets */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col transition-colors lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">Recent Tickets</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Latest active requests requiring attention</p>
+            </div>
+            <a href="/tickets" className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View all</a>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/50 uppercase border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="px-4 py-3 font-medium">ID</th>
+                  <th className="px-4 py-3 font-medium">Title</th>
+                  <th className="px-4 py-3 font-medium">Priority</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {tickets.slice(0, 5).map((t) => (
+                  <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-300">
+                      #{t.id}
+                    </td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+                      {t.title}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        t.priority === 'High' || t.priority === 'Critical' 
+                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' 
+                          : t.priority === 'Medium'
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400'
+                      }`}>
+                        {t.priority}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[t.status || ''] || '#94a3b8' }}></span>
+                        <span className="text-slate-700 dark:text-slate-300">{t.status}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      {new Date(t.createdAt!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </td>
+                  </tr>
+                ))}
+                {tickets.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                      No recent tickets found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
