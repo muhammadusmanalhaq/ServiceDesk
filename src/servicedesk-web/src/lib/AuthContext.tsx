@@ -42,6 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("service_desk_user");
   };
 
+  if (isLoading) {
+    return null; // Prevent children from rendering (and firing API requests) before token is restored
+  }
+
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}

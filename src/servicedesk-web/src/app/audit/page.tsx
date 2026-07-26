@@ -41,7 +41,7 @@ export default function AuditLogsPage() {
   const filteredLogs = logs.filter(log => 
     log.entityName?.toLowerCase().includes(search.toLowerCase()) ||
     log.action?.toLowerCase().includes(search.toLowerCase()) ||
-    log.changedByUserId?.toLowerCase().includes(search.toLowerCase())
+    log.changedByName?.toLowerCase().includes(search.toLowerCase())
   );
 
   const getActionColor = (action: string | null | undefined) => {

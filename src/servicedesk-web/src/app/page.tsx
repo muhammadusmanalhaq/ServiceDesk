@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Ticket, Monitor, Percent, AlertOctagon, Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
@@ -160,7 +161,7 @@ export default function Dashboard() {
               <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">Recent Tickets</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">Latest active requests requiring attention</p>
             </div>
-            <a href="/tickets" className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View all</a>
+            <Link href="/tickets" className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View all</Link>
           </div>
           
           <div className="overflow-x-auto">

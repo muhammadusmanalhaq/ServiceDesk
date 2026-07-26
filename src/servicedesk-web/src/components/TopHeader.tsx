@@ -1,11 +1,13 @@
 "use client";
 
-import { Search, Sun, Moon, User, Menu, LogOut } from "lucide-react";
+import { Search, Sun, Moon, User, Menu, LogOut, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/apiClient";
+import { CreateTicketModal } from "@/components/CreateTicketModal";
+import { Button } from "@/components/ui/button";
 
 interface TopHeaderProps {
   onMenuClick: () => void;
@@ -15,6 +17,7 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -71,6 +74,15 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
         )}
+
+        <Button 
+          onClick={() => setIsTicketModalOpen(true)} 
+          size="sm" 
+          className="bg-indigo-600 hover:bg-indigo-700 text-white hidden sm:flex"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Create Ticket
+        </Button>
         
         <div className="relative" ref={dropdownRef}>
           <div 
@@ -103,6 +115,14 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
           )}
         </div>
       </div>
+      
+      <CreateTicketModal 
+        isOpen={isTicketModalOpen} 
+        onClose={() => setIsTicketModalOpen(false)} 
+        onTicketCreated={() => {
+          router.push("/tickets");
+        }} 
+      />
     </header>
   );
 }

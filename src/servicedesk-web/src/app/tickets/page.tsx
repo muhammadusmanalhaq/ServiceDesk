@@ -7,6 +7,8 @@ import { components } from "@/lib/api-types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+import { CreateTicketModal } from "@/components/CreateTicketModal";
+
 type TicketResponse = components["schemas"]["TicketResponse"];
 
 const KANBAN_COLUMNS = [
@@ -20,29 +22,32 @@ export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketResponse[]>([]);
   const [departments, setDepartments] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [ticketsRes, deptsRes] = await Promise.all([
+        apiFetch.GET("/api/tickets"),
+        apiFetch.GET("/api/departments")
+      ]);
+      
+      if (ticketsRes.data) setTickets(ticketsRes.data);
+      if (deptsRes.data) {
+        const deptMap: Record<string, string> = {};
+        deptsRes.data.forEach((d: any) => {
+          if (d.id && d.name) deptMap[d.id] = d.name;
+        });
+        setDepartments(deptMap);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [ticketsRes, deptsRes] = await Promise.all([
-          apiFetch.GET("/api/tickets"),
-          apiFetch.GET("/api/departments")
-        ]);
-        
-        if (ticketsRes.data) setTickets(ticketsRes.data);
-        if (deptsRes.data) {
-          const deptMap: Record<string, string> = {};
-          deptsRes.data.forEach((d: any) => {
-            if (d.id && d.name) deptMap[d.id] = d.name;
-          });
-          setDepartments(deptMap);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     fetchData();
   }, []);
 
@@ -75,12 +80,20 @@ export default function TicketsPage() {
           <p className="text-slate-500 dark:text-slate-400 transition-colors">Manage and track service requests.</p>
         </div>
         <div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
+          <Button onClick={() => setIsModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Create Ticket
           </Button>
         </div>
       </div>
+
+      <CreateTicketModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onTicketCreated={() => {
+          fetchData(); // Refresh tickets when created
+        }} 
+      />
 
       <div className="flex-1 overflow-x-auto pb-4">
         {isLoading ? (

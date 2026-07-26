@@ -16,6 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { EditAssetModal } from "@/components/EditAssetModal";
+
 type AssetResponse = components["schemas"]["AssetResponse"];
 
 export default function AssetsPage() {
@@ -23,28 +25,31 @@ export default function AssetsPage() {
   const [departments, setDepartments] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState<AssetResponse | null>(null);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [assetsRes, deptsRes] = await Promise.all([
+        apiFetch.GET("/api/assets"),
+        apiFetch.GET("/api/departments")
+      ]);
+      if (assetsRes.data) setAssets(assetsRes.data);
+      if (deptsRes.data) {
+        const deptMap: Record<string, string> = {};
+        deptsRes.data.forEach((d: any) => {
+          if (d.id && d.name) deptMap[d.id] = d.name;
+        });
+        setDepartments(deptMap);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [assetsRes, deptsRes] = await Promise.all([
-          apiFetch.GET("/api/assets"),
-          apiFetch.GET("/api/departments")
-        ]);
-        if (assetsRes.data) setAssets(assetsRes.data);
-        if (deptsRes.data) {
-          const deptMap: Record<string, string> = {};
-          deptsRes.data.forEach((d: any) => {
-            if (d.id && d.name) deptMap[d.id] = d.name;
-          });
-          setDepartments(deptMap);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     fetchData();
   }, []);
 
@@ -66,6 +71,16 @@ export default function AssetsPage() {
           </Button>
         </div>
       </div>
+
+      <EditAssetModal
+        isOpen={!!selectedAsset}
+        onClose={() => setSelectedAsset(null)}
+        onAssetUpdated={() => {
+          fetchData();
+        }}
+        asset={selectedAsset}
+        departments={departments}
+      />
 
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col transition-colors">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
@@ -95,13 +110,13 @@ export default function AssetsPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-32">
+                  <TableCell colSpan={6} className="text-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-indigo-500" />
                   </TableCell>
                 </TableRow>
               ) : filteredAssets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-32 text-slate-500">
+                  <TableCell colSpan={6} className="text-center h-32 text-slate-500">
                     No assets found.
                   </TableCell>
                 </TableRow>
@@ -126,11 +141,15 @@ export default function AssetsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-slate-500 dark:text-slate-400">
-                      {/* Mock last updated date based on string id length or static, or use real data if exists */}
                       Today
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <Button 
+                        onClick={() => setSelectedAsset(asset)}
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
                         Edit
                       </Button>
                     </TableCell>
