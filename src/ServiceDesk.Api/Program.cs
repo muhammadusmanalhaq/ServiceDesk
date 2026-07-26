@@ -136,9 +136,12 @@ var app = builder.Build();
 // ─── Seed roles and starter departments ──────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
+    var systemFactory = scope.ServiceProvider.GetRequiredService<SystemDbContextFactory>();
+    using var systemDb = systemFactory.CreateSystemContext();
+    await systemDb.Database.MigrateAsync();
+
     await DbSeeder.SeedAsync(scope.ServiceProvider);
 }
-
 // ─── Middleware pipeline ──────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
