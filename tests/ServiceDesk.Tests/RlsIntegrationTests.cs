@@ -10,7 +10,8 @@ using Xunit;
 
 namespace ServiceDesk.Tests;
 
-public class RlsIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
+[Collection("Integration")]
+public class RlsIntegrationTests : IAsyncLifetime
 {
     private readonly CustomWebApplicationFactory _factory;
     private HttpClient _client = null!;
@@ -38,7 +39,7 @@ public class RlsIntegrationTests : IClassFixture<CustomWebApplicationFactory>, I
         using var db = _factory.Services.GetRequiredService<SystemDbContextFactory>().CreateSystemContext();
         
         // Clean up previous test data to prevent cross-test corruption
-        await db.Database.ExecuteSqlRawAsync("DELETE FROM \"Tickets\"; DELETE FROM \"Assets\"; DELETE FROM \"AspNetUsers\"; DELETE FROM \"Departments\";");
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM \"Notifications\"; DELETE FROM \"Tickets\"; DELETE FROM \"Assets\"; DELETE FROM \"AspNetUsers\"; DELETE FROM \"Departments\";");
 
         // Seed Departments
         var deptA = new Department { Name = "Test Dept A" };

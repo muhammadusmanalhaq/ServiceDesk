@@ -21,24 +21,38 @@ public class TicketsController : ControllerBase
         _db = db;
     }
 
-    private Guid CurrentDepartmentId => 
+    private Guid CurrentDepartmentId =>
         Guid.Parse(User.FindFirstValue("department_id") ?? Guid.Empty.ToString());
+
+    private string CurrentUserId =>
+        User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+
+    private string CurrentRole =>
+        User.FindFirstValue(ClaimTypes.Role)
+        ?? User.FindFirstValue("role")
+        ?? "";
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private static TicketResponse ToResponse(Ticket t) => new(
+        t.Id, t.Title, t.Description, t.Status, t.Priority,
+        t.AssetId, t.DepartmentId, t.AssignedToUserId,
+        t.ClaimedByUserId, t.ClaimedAt,
+        t.VerifiedByUserId, t.VerifiedAt, t.ResolutionNote,
+        t.SlaDeadline, t.SlaBreached, t.CreatedAt);
+
+    // ── CRUD ─────────────────────────────────────────────────────────────────
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<TicketResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
-        
-        var tickets = await _db.Tickets
-            .Select(t => new TicketResponse(
-                t.Id, t.Title, t.Description, t.Status, t.Priority, 
-                t.AssetId, t.DepartmentId, t.AssignedToUserId, 
-                t.SlaDeadline, t.SlaBreached, t.CreatedAt))
-            .ToListAsync();
-            
+
+        var tickets = await _db.Tickets.ToListAsync();
+
         await transaction.CommitAsync();
-        return Ok(tickets);
+        return Ok(tickets.Select(ToResponse));
     }
 
     [HttpGet("{id:guid}")]
@@ -47,17 +61,14 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
-        
+
         var ticket = await _db.Tickets.FindAsync(id);
-        
+
         await transaction.CommitAsync();
 
         if (ticket == null) return NotFound();
 
-        return Ok(new TicketResponse(
-            ticket.Id, ticket.Title, ticket.Description, ticket.Status, ticket.Priority, 
-            ticket.AssetId, ticket.DepartmentId, ticket.AssignedToUserId, 
-            ticket.SlaDeadline, ticket.SlaBreached, ticket.CreatedAt));
+        return Ok(ToResponse(ticket));
     }
 
     [HttpPost]
@@ -94,11 +105,7 @@ public class TicketsController : ControllerBase
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, 
-            new TicketResponse(
-                ticket.Id, ticket.Title, ticket.Description, ticket.Status, ticket.Priority, 
-                ticket.AssetId, ticket.DepartmentId, ticket.AssignedToUserId, 
-                ticket.SlaDeadline, ticket.SlaBreached, ticket.CreatedAt));
+        return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ToResponse(ticket));
     }
 
     [HttpPut("{id:guid}/status")]
@@ -108,9 +115,9 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> UpdateStatus(Guid id, UpdateTicketStatusRequest request)
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
-        
+
         var ticket = await _db.Tickets.FindAsync(id);
-        if (ticket == null) 
+        if (ticket == null)
         {
             await transaction.CommitAsync();
             return NotFound();
@@ -127,10 +134,7 @@ public class TicketsController : ControllerBase
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return Ok(new TicketResponse(
-            ticket.Id, ticket.Title, ticket.Description, ticket.Status, ticket.Priority, 
-            ticket.AssetId, ticket.DepartmentId, ticket.AssignedToUserId, 
-            ticket.SlaDeadline, ticket.SlaBreached, ticket.CreatedAt));
+        return Ok(ToResponse(ticket));
     }
 
     [HttpPost("{id:guid}/assign")]
@@ -141,9 +145,9 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> Assign(Guid id, AssignTicketRequest request)
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
-        
+
         var ticket = await _db.Tickets.FindAsync(id);
-        if (ticket == null) 
+        if (ticket == null)
         {
             await transaction.CommitAsync();
             return NotFound();
@@ -157,9 +161,182 @@ public class TicketsController : ControllerBase
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return Ok(new TicketResponse(
-            ticket.Id, ticket.Title, ticket.Description, ticket.Status, ticket.Priority, 
-            ticket.AssetId, ticket.DepartmentId, ticket.AssignedToUserId, 
-            ticket.SlaDeadline, ticket.SlaBreached, ticket.CreatedAt));
+        return Ok(ToResponse(ticket));
+    }
+
+    // ── Claim / Verify workflow ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Agent claims that they have resolved a ticket.
+    /// Transitions the ticket to PendingVerification and notifies the department manager/admin.
+    /// </summary>
+    [HttpPost("{id:guid}/claim")]
+    [Authorize(Roles = "Agent")]
+    [ProducesResponseType(typeof(TicketResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Claim(Guid id, ClaimTicketRequest request)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        // RLS ensures the ticket is in the Agent's department; if not, FindAsync returns null → 404.
+        var ticket = await _db.Tickets.FindAsync(id);
+        if (ticket == null)
+        {
+            await transaction.CommitAsync();
+            return NotFound();
+        }
+
+        // Only tickets that are Open or InProgress can be claimed
+        if (ticket.Status != "Open" && ticket.Status != "InProgress")
+        {
+            await transaction.CommitAsync();
+            return Conflict(new { message = $"Ticket cannot be claimed from status '{ticket.Status}'." });
+        }
+
+        var now = DateTime.UtcNow;
+        ticket.Status = "PendingVerification";
+        ticket.ClaimedByUserId = CurrentUserId;
+        ticket.ClaimedAt = now;
+        ticket.ResolutionNote = request.ResolutionNote;
+
+        // Write an in-app notification for every Admin/Manager in the department so they
+        // know a claim is awaiting review. We fetch their IDs without RLS (Notifications
+        // table has no policy), using the current scoped context which already has the
+        // department_id GUC set — the AspNetUsers query below uses no RLS, that's fine.
+        var managersAndAdmins = await _db.Users
+            .Where(u => u.DepartmentId == CurrentDepartmentId)
+            .Join(_db.UserRoles, u => u.Id, ur => ur.UserId, (u, ur) => new { u, ur })
+            .Join(_db.Roles, x => x.ur.RoleId, r => r.Id, (x, r) => new { x.u, RoleName = r.Name })
+            .Where(x => x.RoleName == "Admin" || x.RoleName == "Manager")
+            .Select(x => x.u.Id)
+            .Distinct()
+            .ToListAsync();
+
+        var notifications = managersAndAdmins.Select(userId => new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Type = "TicketClaimed",
+            Message = $"Ticket \"{ticket.Title}\" has been claimed by agent and is pending your verification.",
+            TicketId = ticket.Id,
+            CreatedAt = now
+        });
+        _db.Notifications.AddRange(notifications);
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return Ok(ToResponse(ticket));
+    }
+
+    /// <summary>
+    /// Admin or Manager verifies (accepts or rejects) an agent's claim.
+    /// 
+    /// Accept → Resolved. Asset status flips to Active ONLY if no other open tickets reference it
+    ///          (i.e., there is no concurrent unresolved work on the same asset).
+    /// Reject → InProgress. The claim fields are cleared; the agent can re-claim once they fix the issue.
+    ///
+    /// Asset multi-ticket rule rationale: if Ticket A and Ticket B both reference the same Asset
+    /// and Ticket A is resolved first, the asset should NOT flip to Active while Ticket B is still
+    /// open — that would inaccurately signal the asset is healthy. The asset only returns to Active
+    /// when no open tickets remain for it.
+    /// </summary>
+    [HttpPost("{id:guid}/verify")]
+    [Authorize(Roles = "Admin,Manager")]
+    [ProducesResponseType(typeof(TicketResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Verify(Guid id, VerifyTicketRequest request)
+    {
+        // Validation: rejection requires a note
+        if (!request.Accept && string.IsNullOrWhiteSpace(request.ResolutionNote))
+        {
+            return BadRequest(new { message = "A ResolutionNote is required when rejecting a claim." });
+        }
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        // RLS ensures the ticket is in the verifier's department. If not → 404.
+        var ticket = await _db.Tickets.FindAsync(id);
+        if (ticket == null)
+        {
+            await transaction.CommitAsync();
+            return NotFound();
+        }
+
+        // Only PendingVerification tickets can be verified
+        if (ticket.Status != "PendingVerification")
+        {
+            await transaction.CommitAsync();
+            return Conflict(new { message = $"Ticket is not pending verification (current status: '{ticket.Status}')." });
+        }
+
+        var now = DateTime.UtcNow;
+        ticket.VerifiedByUserId = CurrentUserId;
+        ticket.VerifiedAt = now;
+
+        string notificationType;
+        string notificationMessage;
+
+        if (request.Accept)
+        {
+            ticket.Status = "Resolved";
+            ticket.ResolutionNote = request.ResolutionNote ?? ticket.ResolutionNote;
+            ticket.SlaBreached = DateTime.UtcNow > ticket.SlaDeadline;
+
+            // Asset status rule: only flip to Active if this was the LAST open ticket on the asset.
+            // "Open" here means not Resolved or Closed — PendingVerification still counts as open.
+            var otherOpenTickets = await _db.Tickets
+                .Where(t => t.AssetId == ticket.AssetId
+                         && t.Id != ticket.Id
+                         && t.Status != "Resolved"
+                         && t.Status != "Closed")
+                .CountAsync();
+
+            if (otherOpenTickets == 0)
+            {
+                var asset = await _db.Assets.FindAsync(ticket.AssetId);
+                if (asset != null)
+                    asset.Status = "Active";
+            }
+
+            notificationType = "ClaimAccepted";
+            notificationMessage = $"Your resolution claim for ticket \"{ticket.Title}\" was accepted.";
+        }
+        else
+        {
+            // Rejection: send the ticket back to InProgress, clear claim fields
+            ticket.Status = "InProgress";
+            ticket.ResolutionNote = request.ResolutionNote;
+            ticket.ClaimedByUserId = null;
+            ticket.ClaimedAt = null;
+            ticket.VerifiedByUserId = null;
+            ticket.VerifiedAt = null;
+
+            notificationType = "ClaimRejected";
+            notificationMessage = $"Your resolution claim for ticket \"{ticket.Title}\" was rejected. Reason: {request.ResolutionNote}";
+        }
+
+        // Notify the claiming agent
+        if (!string.IsNullOrEmpty(ticket.ClaimedByUserId) || !string.IsNullOrEmpty(ticket.AssignedToUserId))
+        {
+            var recipientId = ticket.ClaimedByUserId ?? ticket.AssignedToUserId!;
+            _db.Notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = recipientId,
+                Type = notificationType,
+                Message = notificationMessage,
+                TicketId = ticket.Id,
+                CreatedAt = now
+            });
+        }
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return Ok(ToResponse(ticket));
     }
 }

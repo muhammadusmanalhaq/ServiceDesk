@@ -1,19 +1,19 @@
 # ServiceDesk
 
-ServiceDesk is a full-stack, enterprise-grade ticketing and IT service management platform built with ASP.NET Core 8 and React. It provides robust Role-Based Access Control (RBAC), multi-department isolation via PostgreSQL Row-Level Security (RLS), automated SLA tracking with background jobs, and a complete audit trail.
+ServiceDesk is a full-stack, enterprise-grade ticketing and IT service management platform built with ASP.NET Core 8 and Next.js. It provides robust Role-Based Access Control (RBAC), multi-department isolation via PostgreSQL Row-Level Security (RLS), automated SLA tracking with background jobs, and a complete audit trail.
 
 ## 🏗 Architecture
 
 The system is split into two main components:
-1. **Frontend:** React SPA built with Vite and TailwindCSS.
+1. **Frontend:** Next.js 15 App Router SPA with TailwindCSS, running on `http://localhost:3000`.
 2. **Backend:** ASP.NET Core 8 Web API.
 3. **Database:** PostgreSQL (Neon) with EF Core.
 
 ```mermaid
 graph LR
-    User[User/Browser] --> |HTTPS| UI[React Frontend Vite]
+    User[User/Browser] --> |HTTPS| UI["Next.js 15 Frontend (App Router)"]
     UI --> |REST API| API[ASP.NET Core 8 API]
-    API --> |EF Core + RLS| DB[(PostgreSQL)]
+    API --> |EF Core + RLS| DB[(PostgreSQL - Neon)]
     
     subgraph Azure Container Apps
         API
@@ -67,13 +67,13 @@ dotnet run --project src/ServiceDesk.Api
 ```
 
 ### 5. Run the Frontend (UI)
-In a new terminal window:
+The frontend is a **Next.js 15 App Router** application. In a new terminal window:
 ```bash
 cd src/servicedesk-web
 npm install
 npm run dev
 ```
-The frontend will start at `http://localhost:5173`.
+The frontend will start at `http://localhost:3000`.
 
 ## ⚙️ Environment Variables
 

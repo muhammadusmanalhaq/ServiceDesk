@@ -6,12 +6,17 @@ param imageName string = 'mcr.microsoft.com/dotnet/aspnet:8.0'
 var uniqueSuffix = uniqueString(resourceGroup().id)
 var kvName = 'kv-sd-${uniqueSuffix}'
 
-// 1. Log Analytics Workspace (For logs & Application Insights later)
+// 1. Log Analytics Workspace
+// COST SAFETY: daily cap of 0.1 GB (100 MB) prevents unexpected ingestion charges.
+// The Azure for Students free tier grants 5 GB/month. At 100 MB/day we stay well within that.
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'law-servicedesk-${uniqueSuffix}'
   location: location
   properties: {
     sku: { name: 'PerGB2018' }
+    workspaceCapping: {
+      dailyQuotaGb: json('0.1') // 100 MB/day hard cap
+    }
   }
 }
 
@@ -26,7 +31,8 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// 2. Container Apps Environment
+// 2. Container Apps Environment (Consumption plan — workloadProfiles omitted = Consumption tier, no fixed cost)
+// minReplicas: 0 on the Container App below ensures scale-to-zero.
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: 'cae-servicedesk-${uniqueSuffix}'
   location: location

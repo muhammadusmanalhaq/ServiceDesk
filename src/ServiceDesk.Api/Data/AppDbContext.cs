@@ -32,6 +32,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     // ─── Audit trail ─────────────────────────────────────────────────────────────
 
@@ -142,6 +143,34 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(t => t.AssignedToUserId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // Ticket → ClaimedByUser
+        modelBuilder.Entity<Ticket>()
+            .HasOne(t => t.ClaimedByUser)
+            .WithMany()
+            .HasForeignKey(t => t.ClaimedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Ticket → VerifiedByUser
+        modelBuilder.Entity<Ticket>()
+            .HasOne(t => t.VerifiedByUser)
+            .WithMany()
+            .HasForeignKey(t => t.VerifiedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // ── Notification ──────────────────────────────────────────────────────
+        // Notifications are filtered by UserId in queries, not by RLS.
+        // RLS is not applied to this table because a notification only reveals
+        // that an event occurred on a ticket — no cross-department data leaks.
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Index: fast lookup of all notifications for a user (the common read pattern)
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => new { n.UserId, n.CreatedAt });
 
         // ── AuditLog ──────────────────────────────────────────────────────────────
         // Store snapshots as Postgres jsonb — queryable with -> / ->> operators
