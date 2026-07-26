@@ -8,8 +8,12 @@ using Microsoft.IdentityModel.Tokens;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.Models;
 using ServiceDesk.Api.Services;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ─── Observability ────────────────────────────────────────────────────────────
+builder.Services.AddOpenTelemetry().UseAzureMonitor();
 
 // ─── Database ─────────────────────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();

@@ -15,6 +15,17 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
+// 1.5. Application Insights
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'appi-servicedesk-${uniqueSuffix}'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
 // 2. Container Apps Environment
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: 'cae-servicedesk-${uniqueSuffix}'
@@ -92,6 +103,11 @@ resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
           keyVaultUrl: '${keyVault.properties.vaultUri}secrets/Jwt--Key'
           identity: apiIdentity.id
         }
+        {
+          name: 'appinsights-connection'
+          keyVaultUrl: '${keyVault.properties.vaultUri}secrets/ApplicationInsights--ConnectionString'
+          identity: apiIdentity.id
+        }
       ]
     }
     template: {
@@ -124,6 +140,10 @@ resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
               name: 'Jwt__Audience'
               value: 'servicedesk-ui'
             }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              secretRef: 'appinsights-connection'
+            }
           ]
           resources: {
             cpu: json('0.5')
@@ -143,3 +163,4 @@ resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
 }
 
 output keyVaultName string = keyVault.name
+output appInsightsConnectionString string = applicationInsights.properties.ConnectionString
