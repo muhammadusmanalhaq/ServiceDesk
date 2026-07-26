@@ -13,7 +13,11 @@ using Azure.Monitor.OpenTelemetry.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─── Observability ────────────────────────────────────────────────────────────
-builder.Services.AddOpenTelemetry().UseAzureMonitor();
+var otel = builder.Services.AddOpenTelemetry();
+if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
+{
+    otel.UseAzureMonitor();
+}
 
 // ─── Database ─────────────────────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
