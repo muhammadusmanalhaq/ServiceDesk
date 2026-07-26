@@ -32,6 +32,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
+      - name: Set lowercase repository name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -43,7 +45,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          tags: ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}
 
   deploy-staging:
     runs-on: ubuntu-latest
@@ -53,6 +55,8 @@ jobs:
       url: ${{ steps.deploy.outputs.app-url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Set lowercase repository name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
       - uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
@@ -66,7 +70,7 @@ jobs:
           inlineScript: |
             echo "Deploying to Staging..."
             az deployment group create --resource-group servicedesk-rg --template-file infra/main.bicep \
-              --parameters deployApp=true appName=ca-servicedesk-api-staging imageName=ghcr.io/${{ github.repository }}:${{ github.sha }}
+              --parameters deployApp=true appName=ca-servicedesk-api-staging imageName=ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}
             
             APP_FQDN=$(az containerapp show -n ca-servicedesk-api-staging -g servicedesk-rg --query properties.configuration.ingress.fqdn -o tsv)
             echo "app-url=https://$APP_FQDN" >> $GITHUB_OUTPUT
@@ -84,6 +88,8 @@ jobs:
       name: production
     steps:
       - uses: actions/checkout@v4
+      - name: Set lowercase repository name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
       - uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
@@ -96,4 +102,4 @@ jobs:
           inlineScript: |
             echo "Deploying exactly ${{ github.sha }} to Production..."
             az deployment group create --resource-group servicedesk-rg --template-file infra/main.bicep \
-              --parameters deployApp=true appName=ca-servicedesk-api imageName=ghcr.io/${{ github.repository }}:${{ github.sha }}
+              --parameters deployApp=true appName=ca-servicedesk-api imageName=ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}
