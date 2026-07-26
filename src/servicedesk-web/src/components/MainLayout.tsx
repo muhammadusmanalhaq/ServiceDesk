@@ -14,7 +14,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
+    // CHANGED: bg-zinc-100 is a true gray that kills the blinding white glare
+    <div className="flex h-screen w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950 transition-colors">
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
@@ -28,7 +29,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
         
-        <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 md:p-6 lg:p-8 transition-colors">
+        {/* CHANGED: Canvas is now zinc-100 so the white cards actually pop */}
+        <main className="flex-1 overflow-y-auto bg-zinc-100 dark:bg-zinc-950 p-4 md:p-6 lg:p-8 transition-colors">
           <div className="mx-auto w-full max-w-7xl">
             {children}
           </div>

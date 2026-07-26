@@ -1,14 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
-
-type CreateTicketRequest = components["schemas"]["CreateTicketRequest"];
 
 interface CreateTicketModalProps {
   isOpen: boolean;
@@ -18,9 +14,12 @@ interface CreateTicketModalProps {
 
 export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTicketModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // States to hold the real data from your database
   const [departments, setDepartments] = useState<any[]>([]);
   const [assets, setAssets] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -31,8 +30,12 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
   });
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch the real departments and assets from the DB when the modal opens
+  useEffect(() => {
     if (isOpen) {
-      // Fetch departments and assets for dropdowns
       apiFetch.GET("/api/departments").then(res => {
         if (res.data) setDepartments(res.data);
       });
@@ -42,7 +45,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,19 +53,21 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
     setError(null);
 
     try {
-      const stored = localStorage.getItem("service_desk_user");
+      const stored = localStorage.getItem("service_desk_user") || localStorage.getItem("user");
       let token = "";
       if (stored) {
         const parsed = JSON.parse(stored);
-        token = parsed.accessToken || "";
+        token = parsed.token || parsed.accessToken || "";
       }
 
-      const payload: CreateTicketRequest = {
+      // We explicitly send 'null' instead of omitting the field or sending ""
+      // This stops ASP.NET Core from defaulting to 00000000-0000-0000-0000-000000000000
+      const payload: any = {
         title: formData.title,
         description: formData.description,
-        departmentId: formData.departmentId || undefined,
-        assetId: formData.assetId || undefined,
+        departmentId: formData.departmentId, 
         priority: formData.priority,
+        assetId: formData.assetId ? formData.assetId : null
       };
 
       const res = await apiFetch.POST("/api/tickets", {
@@ -74,81 +79,92 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
       });
 
       if (res.error) {
-        setError(res.error.title || "Failed to create ticket");
+        if (res.error.errors && typeof res.error.errors === 'object') {
+          const validationErrors = Object.values(res.error.errors).flat().join(" | ");
+          setError(`Validation Failed: ${validationErrors}`);
+        } else {
+          setError(res.error.title || res.error.message || "Failed to create ticket.");
+        }
       } else {
         setFormData({ title: "", description: "", departmentId: "", assetId: "", priority: "Medium" });
         onTicketCreated();
         onClose();
       }
-    } catch (err) {
-      setError("An unexpected error occurred.");
+    } catch (err: any) {
+      setError(err.message || "An unexpected network error occurred.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 w-screen h-screen m-0 p-0 top-0 left-0">
-      <div className="bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto border border-slate-800">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-slate-100">Create New Ticket</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 w-screen h-screen transition-colors">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden relative transition-colors">
+        
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 transition-colors">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Create New Ticket</h2>
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-red-500 text-sm p-2 bg-red-900/20 rounded">{error}</div>}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="text-red-600 dark:text-red-400 text-sm font-medium p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg">
+              {error}
+            </div>
+          )}
           
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-slate-300">Title</Label>
-            <Input 
+          <div className="space-y-1.5">
+            <label htmlFor="title" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Title</label>
+            <input 
               id="title" 
               required 
               value={formData.title} 
               onChange={e => setFormData({...formData, title: e.target.value})} 
-              className="bg-slate-800 border-slate-700 text-slate-100 focus:ring-indigo-500" 
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
               placeholder="E.g., Cannot access email" 
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-slate-300">Description</Label>
+          <div className="space-y-1.5">
+            <label htmlFor="description" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Description</label>
             <textarea 
               id="description" 
               required 
               rows={3} 
               value={formData.description} 
               onChange={e => setFormData({...formData, description: e.target.value})} 
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
               placeholder="Describe the issue in detail..." 
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="department" className="text-slate-300">Department</Label>
+            <div className="space-y-1.5">
+              <label htmlFor="department" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Department</label>
               <select 
                 id="department" 
+                required 
                 value={formData.departmentId} 
                 onChange={e => setFormData({...formData, departmentId: e.target.value})}
-                className="w-full rounded-md border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
               >
-                <option value="">(Select Department)</option>
-                <option value="11111111-1111-1111-1111-111111111111">IT</option>
-                <option value="22222222-2222-2222-2222-222222222222">Operations</option>
-                <option value="33333333-3333-3333-3333-333333333333">Field Support</option>
+                <option value="" disabled className="text-zinc-500 dark:text-zinc-400">(Select Department)</option>
+                {departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
               </select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="priority" className="text-slate-300">Priority</Label>
+            <div className="space-y-1.5">
+              <label htmlFor="priority" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Priority</label>
               <select 
                 id="priority" 
                 required
                 value={formData.priority} 
                 onChange={e => setFormData({...formData, priority: e.target.value})}
-                className="w-full rounded-md border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -158,29 +174,32 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="asset" className="text-slate-300">Related Asset (Optional)</Label>
+          <div className="space-y-1.5">
+            <label htmlFor="asset" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Related Asset (Optional)</label>
             <select 
               id="asset" 
               value={formData.assetId} 
               onChange={e => setFormData({...formData, assetId: e.target.value})}
-              className="w-full rounded-md border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
             >
-              <option value="">(None)</option>
+              <option value="" className="text-zinc-500 dark:text-zinc-400">(None)</option>
               {assets.map(a => (
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
             </select>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100">Cancel</Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={isSubmitting} className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Ticket"}
-            </Button>
+            </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

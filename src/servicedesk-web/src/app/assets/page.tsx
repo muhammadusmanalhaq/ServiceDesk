@@ -63,8 +63,8 @@ export default function AssetsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 transition-colors">Assets</h1>
-          <p className="text-slate-500 dark:text-slate-400 transition-colors">Manage and track company hardware and software.</p>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors">Assets</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 transition-colors">Manage and track company hardware and software.</p>
         </div>
         <div>
           <Button onClick={() => setIsAddAssetModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
@@ -89,13 +89,14 @@ export default function AssetsPage() {
         departments={departments}
       />
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col transition-colors">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+      {/* CHANGED: bg-white to pop off the gray canvas */}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col transition-colors">
+        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="relative flex items-center max-w-sm">
+            <Search className="absolute left-3 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
             <Input 
               placeholder="Search assets..." 
-              className="pl-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
+              className="pl-9 bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 transition-colors"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -104,14 +105,14 @@ export default function AssetsPage() {
 
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="bg-slate-50 dark:bg-slate-800">
-              <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <TableHead className="font-semibold text-slate-600 dark:text-slate-300">ID</TableHead>
-                <TableHead className="font-semibold text-slate-600 dark:text-slate-300">Name</TableHead>
-                <TableHead className="font-semibold text-slate-600 dark:text-slate-300">Department</TableHead>
-                <TableHead className="font-semibold text-slate-600 dark:text-slate-300">Status</TableHead>
-                <TableHead className="font-semibold text-slate-600 dark:text-slate-300">Last Updated</TableHead>
-                <TableHead className="text-right font-semibold text-slate-600 dark:text-slate-300">Actions</TableHead>
+            <TableHeader className="bg-zinc-50/80 dark:bg-zinc-900/50">
+              <TableRow className="border-b border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                <TableHead className="font-semibold text-zinc-600 dark:text-zinc-300">ID</TableHead>
+                <TableHead className="font-semibold text-zinc-600 dark:text-zinc-300">Name</TableHead>
+                <TableHead className="font-semibold text-zinc-600 dark:text-zinc-300">Department</TableHead>
+                <TableHead className="font-semibold text-zinc-600 dark:text-zinc-300">Status</TableHead>
+                <TableHead className="font-semibold text-zinc-600 dark:text-zinc-300">Last Updated</TableHead>
+                <TableHead className="text-right font-semibold text-zinc-600 dark:text-zinc-300">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -123,31 +124,31 @@ export default function AssetsPage() {
                 </TableRow>
               ) : filteredAssets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-32 text-slate-500">
+                  <TableCell colSpan={6} className="text-center h-32 text-zinc-500">
                     No assets found.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredAssets.map(asset => (
-                  <TableRow key={asset.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                  <TableRow key={asset.id} className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <TableCell className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
                       {asset.id?.split("-")[0]}
                     </TableCell>
-                    <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                    <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
                       {asset.name}
                     </TableCell>
-                    <TableCell className="text-sm text-slate-600 dark:text-slate-400">
+                    <TableCell className="text-sm text-zinc-600 dark:text-zinc-400">
                       {asset.departmentId && departments[asset.departmentId] 
                         ? <Badge variant="outline">{departments[asset.departmentId]}</Badge>
-                        : <span className="text-slate-400">-</span>}
+                        : <span className="text-zinc-400">-</span>}
                     </TableCell>
                     <TableCell>
                       <Badge variant={asset.status === "Active" ? "default" : "secondary"}
-                             className={asset.status === "Active" ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}>
+                             className={asset.status === "Active" ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/30" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"}>
                         {asset.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-slate-500 dark:text-slate-400">
+                    <TableCell className="text-sm text-zinc-500 dark:text-zinc-400">
                       Today
                     </TableCell>
                     <TableCell className="text-right">
@@ -155,7 +156,7 @@ export default function AssetsPage() {
                         onClick={() => setSelectedAsset(asset)}
                         variant="ghost" 
                         size="sm" 
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                       >
                         Edit
                       </Button>

@@ -53,14 +53,12 @@ export default function Dashboard() {
   const activeAssets = assets.filter(a => a.status === "Active").length;
   const breachedTickets = tickets.filter(t => t.slaBreached).length;
   
-  // Calculate SLA compliance
   const resolvedOrClosed = tickets.filter(t => t.status === "Resolved" || t.status === "Closed");
   const compliantTickets = resolvedOrClosed.filter(t => !t.slaBreached).length;
   const slaCompliance = resolvedOrClosed.length > 0 
     ? ((compliantTickets / resolvedOrClosed.length) * 100).toFixed(1) 
     : "N/A";
 
-  // Data for Chart
   const statusCounts = tickets.reduce((acc, t) => {
     acc[t.status || "Unknown"] = (acc[t.status || "Unknown"] || 0) + 1;
     return acc;
@@ -74,11 +72,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 transition-colors">Dashboard</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 transition-colors">Overview of your service desk metrics and status.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 transition-colors">Dashboard</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 transition-colors">Overview of your service desk metrics and status.</p>
       </div>
 
-      {/* Top Stat Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <StatCard 
           title="Open & In Progress Tickets" 
@@ -99,7 +96,6 @@ export default function Dashboard() {
         <StatCard 
           title="SLA Compliance %" 
           value={slaCompliance === "N/A" ? "N/A" : `${slaCompliance}%`} 
-
           trend="" 
           trendUp={parseFloat(slaCompliance) > 95} 
           icon={<Percent className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />} 
@@ -109,19 +105,18 @@ export default function Dashboard() {
           title="Breached Tickets" 
           value={breachedTickets.toString()} 
           trend="" 
-          trendUp={breachedTickets === 0} // increasing breached is bad
+          trendUp={breachedTickets === 0}
           icon={<AlertOctagon className="w-5 h-5 text-rose-600 dark:text-rose-400" />} 
           subtitle="requiring immediate attention"
         />
       </div>
 
-      {/* Charts Middle Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart 1: Tickets by Status */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col min-h-[350px] transition-colors lg:col-span-1">
+        {/* Restored bg-white to make the cards pop off the canvas */}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm flex flex-col min-h-[350px] transition-colors lg:col-span-1">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">Tickets by Status</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Current active workload distribution</p>
+            <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-200">Tickets by Status</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Current active workload distribution</p>
           </div>
           <div className="flex-1 min-h-[250px]">
             {chartData.length > 0 ? (
@@ -141,32 +136,32 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <RechartsTooltip 
-                    contentStyle={{ backgroundColor: "#1e293b", borderColor: "#334155", color: "#f8fafc" }}
+                    contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", color: "#f4f4f5" }}
                   />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-slate-500">
+              <div className="flex h-full items-center justify-center text-zinc-500">
                 No tickets found.
               </div>
             )}
           </div>
         </div>
 
-        {/* Table: Recent Tickets */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col transition-colors lg:col-span-2">
+        {/* Restored bg-white for the table card */}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm flex flex-col transition-colors lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">Recent Tickets</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Latest active requests requiring attention</p>
+              <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-200">Recent Tickets</h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Latest active requests requiring attention</p>
             </div>
             <Link href="/tickets" className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View all</Link>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/50 uppercase border-b border-slate-200 dark:border-slate-800">
+              <thead className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950/50 uppercase border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
                   <th className="px-4 py-3 font-medium">ID</th>
                   <th className="px-4 py-3 font-medium">Title</th>
@@ -175,13 +170,13 @@ export default function Dashboard() {
                   <th className="px-4 py-3 font-medium">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {tickets.slice(0, 5).map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-300">
+                  <tr key={t.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-300">
                       #{t.id}
                     </td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+                    <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300 max-w-[200px] truncate">
                       {t.title}
                     </td>
                     <td className="px-4 py-3">
@@ -190,7 +185,7 @@ export default function Dashboard() {
                           ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' 
                           : t.priority === 'Medium'
                             ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400'
+                            : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400'
                       }`}>
                         {t.priority}
                       </span>
@@ -198,17 +193,17 @@ export default function Dashboard() {
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[t.status || ''] || '#94a3b8' }}></span>
-                        <span className="text-slate-700 dark:text-slate-300">{t.status}</span>
+                        <span className="text-zinc-700 dark:text-zinc-300">{t.status}</span>
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       {new Date(t.createdAt!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </td>
                   </tr>
                 ))}
                 {tickets.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
                       No recent tickets found.
                     </td>
                   </tr>
@@ -224,15 +219,16 @@ export default function Dashboard() {
 
 function StatCard({ title, value, trend, trendUp, icon, subtitle }: { title: string, value: string, trend: string, trendUp: boolean, icon: React.ReactNode, subtitle?: string }) {
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-colors">
+    // Restored bg-white here as well
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm transition-colors">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</h3>
-        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+        <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{title}</h3>
+        <div className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-100 dark:border-zinc-700">
           {icon}
         </div>
       </div>
       <div className="flex items-baseline space-x-3">
-        <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</span>
+        <span className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{value}</span>
         {trend && (
           <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${
             trendUp 
@@ -245,7 +241,7 @@ function StatCard({ title, value, trend, trendUp, icon, subtitle }: { title: str
       </div>
       {subtitle && (
         <div className="mt-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</span>
         </div>
       )}
     </div>

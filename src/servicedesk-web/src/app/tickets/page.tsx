@@ -15,7 +15,7 @@ const KANBAN_COLUMNS = [
   { id: "Open", title: "Open", bg: "bg-blue-500/10 border-blue-500/20" },
   { id: "InProgress", title: "In Progress", bg: "bg-amber-500/10 border-amber-500/20" },
   { id: "Resolved", title: "Resolved", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  { id: "Closed", title: "Closed", bg: "bg-slate-500/10 border-slate-500/20" }
+  { id: "Closed", title: "Closed", bg: "bg-zinc-500/10 border-zinc-500/20" }
 ];
 
 export default function TicketsPage() {
@@ -76,8 +76,8 @@ export default function TicketsPage() {
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 transition-colors">Tickets</h1>
-          <p className="text-slate-500 dark:text-slate-400 transition-colors">Manage and track service requests.</p>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors">Tickets</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 transition-colors">Manage and track service requests.</p>
         </div>
         <div>
           <Button onClick={() => setIsModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
@@ -91,7 +91,7 @@ export default function TicketsPage() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onTicketCreated={() => {
-          fetchData(); // Refresh tickets when created
+          fetchData(); 
         }} 
       />
 
@@ -108,8 +108,8 @@ export default function TicketsPage() {
               return (
                 <div key={column.id} className="w-full flex flex-col h-full max-h-[calc(100vh-200px)]">
                   <div className={`mb-3 px-4 py-2 rounded-lg border flex justify-between items-center ${column.bg}`}>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-200">{column.title}</h3>
-                    <Badge variant="secondary" className="bg-white/50 dark:bg-slate-950/50 text-slate-700 dark:text-slate-300">
+                    <h3 className="font-semibold text-zinc-800 dark:text-zinc-200">{column.title}</h3>
+                    <Badge variant="secondary" className="bg-white/50 dark:bg-zinc-950/50 text-zinc-700 dark:text-zinc-300">
                       {columnTickets.length}
                     </Badge>
                   </div>
@@ -118,15 +118,16 @@ export default function TicketsPage() {
                     {columnTickets.map(ticket => (
                       <div 
                         key={ticket.id} 
-                        className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md dark:hover:border-slate-700 transition-all cursor-pointer group"
+                        // CHANGED: bg-white to make the tickets pop off the canvas
+                        className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md dark:hover:border-zinc-700 transition-all cursor-pointer group"
                       >
                         <div className="flex justify-between items-start mb-2 gap-2">
-                          <h4 className="font-medium text-slate-900 dark:text-slate-100 line-clamp-2 text-sm leading-snug">
+                          <h4 className="font-medium text-zinc-900 dark:text-zinc-100 line-clamp-2 text-sm leading-snug">
                             {ticket.title}
                           </h4>
                         </div>
                         
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 leading-relaxed">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-4 leading-relaxed">
                           {ticket.description}
                         </p>
                         
@@ -137,29 +138,28 @@ export default function TicketsPage() {
                             </span>
                             
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-slate-400 dark:text-slate-500">
+                              <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500">
                                 #{ticket.id?.split("-")[0]}
                               </span>
                               {ticket.departmentId && departments[ticket.departmentId] && (
-                                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-sm">
+                                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-sm">
                                   {departments[ticket.departmentId]}
                                 </span>
                               )}
-                              {/* Mock Avatar */}
-                              <div className="h-6 w-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                                <User className="h-3.5 w-3.5 text-slate-400" />
+                              <div className="h-6 w-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
+                                <User className="h-3.5 w-3.5 text-zinc-400" />
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
                             {ticket.slaBreached ? (
                               <div className="flex items-center text-xs font-medium text-rose-500 dark:text-rose-400">
                                 <AlertCircle className="w-3.5 h-3.5 mr-1" />
                                 Breached
                               </div>
                             ) : (
-                              <div className="flex items-center text-xs font-medium text-slate-500 dark:text-slate-400">
+                              <div className="flex items-center text-xs font-medium text-zinc-500 dark:text-zinc-400">
                                 <Clock className="w-3.5 h-3.5 mr-1" />
                                 {getSlaText(ticket.slaDeadline, ticket.status)}
                               </div>
@@ -170,7 +170,7 @@ export default function TicketsPage() {
                     ))}
                     
                     {columnTickets.length === 0 && (
-                      <div className="h-24 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center text-sm text-slate-500">
+                      <div className="h-24 rounded-lg border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-sm text-zinc-500">
                         No tickets
                       </div>
                     )}
