@@ -78,6 +78,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNextJs", policy =>
     {
         policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+              .SetIsOriginAllowed(origin => origin.EndsWith(".vercel.app") || origin.EndsWith("service-desk-mauve.vercel.app"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
