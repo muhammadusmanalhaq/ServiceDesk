@@ -5,6 +5,7 @@ const nextConfig = {
     // your project has type errors (e.g. strict openapi-fetch types).
     ignoreBuildErrors: true,
   },
+  output: 'export',
 };
 
 export default nextConfig;
