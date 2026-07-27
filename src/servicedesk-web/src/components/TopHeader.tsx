@@ -4,7 +4,7 @@ import { Search, Sun, Moon, User, Menu, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface TopHeaderProps {
   onMenuClick: () => void;
@@ -15,11 +15,16 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
+  
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+    // Keep the input text in sync with the URL if they refresh
+    setSearchTerm(searchParams.get("search") || "");
     
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -28,15 +33,24 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [searchParams]);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (searchTerm.trim()) {
+        router.push(`/tickets?search=${encodeURIComponent(searchTerm.trim())}`);
+      } else {
+        router.push(`/tickets`);
+      }
+    }
+  };
+
   return (
-    // CHANGED: Solid bg-white with shadow-sm to make it pop off the gray canvas
     <header className="w-full h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm sticky top-0 z-10 px-4 sm:px-6 flex items-center justify-between flex-shrink-0 transition-colors">
       <div className="flex-1 flex items-center">
         <button 
@@ -52,11 +66,14 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
           </div>
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleSearch}
             className="block w-full pl-10 pr-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg leading-5 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-            placeholder="Search tickets, assets..."
+            placeholder="Search tickets by ID, title, or description..."
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <span className="text-xs text-zinc-400 dark:text-zinc-500 font-semibold border border-zinc-200 dark:border-zinc-700 rounded px-1.5 py-0.5">⌘K</span>
+            <span className="text-xs text-zinc-400 dark:text-zinc-500 font-semibold border border-zinc-200 dark:border-zinc-700 rounded px-1.5 py-0.5">↵ Enter</span>
           </div>
         </div>
       </div>
