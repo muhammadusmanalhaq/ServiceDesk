@@ -78,8 +78,16 @@ jobs:
       - name: Smoke Test
         run: |
           echo "Waiting for container to boot..."
-          sleep 15
-          curl -f ${{ steps.deploy.outputs.app-url }}/swagger/index.html
+          for i in {1..12}; do
+            if curl -s -f ${{ steps.deploy.outputs.app-url }}/health > /dev/null; then
+              echo "Container is up!"
+              exit 0
+            fi
+            echo "Waiting for container to boot... ($i/12)"
+            sleep 10
+          done
+          echo "Container failed to start in time."
+          exit 1
 
   deploy-production:
     runs-on: ubuntu-latest
