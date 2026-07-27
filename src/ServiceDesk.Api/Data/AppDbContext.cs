@@ -158,6 +158,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(t => t.VerifiedByUserId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // Performance Indexes for API
+        modelBuilder.Entity<Ticket>().HasIndex(t => t.DepartmentId);
+        modelBuilder.Entity<Ticket>().HasIndex(t => t.Status);
+        modelBuilder.Entity<Ticket>().HasIndex(t => t.AssetId);
+
         // ── Notification ──────────────────────────────────────────────────────
         // Notifications are filtered by UserId in queries, not by RLS.
         // RLS is not applied to this table because a notification only reveals

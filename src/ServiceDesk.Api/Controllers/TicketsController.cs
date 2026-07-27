@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.DTOs.CoreDomain;
 using ServiceDesk.Api.Models;
@@ -15,10 +16,12 @@ namespace ServiceDesk.Api.Controllers;
 public class TicketsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IMemoryCache _cache;
 
-    public TicketsController(AppDbContext db)
+    public TicketsController(AppDbContext db, IMemoryCache cache)
     {
         _db = db;
+        _cache = cache;
     }
 
     private Guid CurrentDepartmentId =>
@@ -47,12 +50,23 @@ public class TicketsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TicketResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
+        var cacheKey = $"Tickets_{CurrentDepartmentId}";
+        if (_cache.TryGetValue(cacheKey, out IEnumerable<TicketResponse>? cachedTickets))
+        {
+            return Ok(cachedTickets);
+        }
+
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
-        var tickets = await _db.Tickets.ToListAsync();
+        var tickets = await _db.Tickets.AsNoTracking().ToListAsync();
 
         await transaction.CommitAsync();
-        return Ok(tickets.Select(ToResponse));
+        
+        var response = tickets.Select(ToResponse).ToList();
+        
+        _cache.Set(cacheKey, response, TimeSpan.FromSeconds(30));
+        
+        return Ok(response);
     }
 
     [HttpGet("{id:guid}")]
@@ -62,7 +76,7 @@ public class TicketsController : ControllerBase
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
-        var ticket = await _db.Tickets.FindAsync(id);
+        var ticket = await _db.Tickets.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
 
         await transaction.CommitAsync();
 
@@ -105,6 +119,8 @@ public class TicketsController : ControllerBase
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
+        _cache.Remove($"Tickets_{CurrentDepartmentId}");
+
         return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ToResponse(ticket));
     }
 
@@ -134,6 +150,8 @@ public class TicketsController : ControllerBase
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
+        _cache.Remove($"Tickets_{CurrentDepartmentId}");
+
         return Ok(ToResponse(ticket));
     }
 
@@ -160,6 +178,8 @@ public class TicketsController : ControllerBase
 
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
         return Ok(ToResponse(ticket));
     }
@@ -226,6 +246,8 @@ public class TicketsController : ControllerBase
 
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
         return Ok(ToResponse(ticket));
     }
@@ -336,6 +358,8 @@ public class TicketsController : ControllerBase
 
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
         return Ok(ToResponse(ticket));
     }

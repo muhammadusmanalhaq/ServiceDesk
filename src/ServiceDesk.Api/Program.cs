@@ -108,6 +108,7 @@ builder.Services.AddHangfireServer(opt =>
 });
 
 // ─── Controllers + Swagger ───────────────────────────────────────────────────
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
