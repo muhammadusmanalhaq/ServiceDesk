@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Plus, Clock, AlertCircle, Loader2, User } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
@@ -8,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import { CreateTicketModal } from "@/components/CreateTicketModal";
+import { TicketDetailsModal } from "@/components/TicketDetailsModal";
 
 type TicketResponse = components["schemas"]["TicketResponse"];
 
 const KANBAN_COLUMNS = [
   { id: "Open", title: "Open", bg: "bg-blue-500/10 border-blue-500/20" },
   { id: "InProgress", title: "In Progress", bg: "bg-amber-500/10 border-amber-500/20" },
+  { id: "PendingVerification", title: "Verify", bg: "bg-indigo-500/10 border-indigo-500/20" },
   { id: "Resolved", title: "Resolved", bg: "bg-emerald-500/10 border-emerald-500/20" },
   { id: "Closed", title: "Closed", bg: "bg-zinc-500/10 border-zinc-500/20" }
 ];
@@ -23,6 +26,11 @@ export default function TicketsPage() {
   const [departments, setDepartments] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<TicketResponse | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -73,8 +81,8 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div className="flex flex-col h-auto xl:h-[calc(100vh-5rem)] overflow-x-hidden overflow-y-auto xl:overflow-hidden pb-2">
+      <div className="flex-none flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors">Tickets</h1>
           <p className="text-zinc-500 dark:text-zinc-400 transition-colors">Manage and track service requests.</p>
@@ -95,18 +103,37 @@ export default function TicketsPage() {
         }} 
       />
 
-      <div className="flex-1 overflow-x-auto pb-4">
+      <TicketDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedTicket(null);
+        }}
+        onTicketUpdated={() => {
+          fetchData();
+        }}
+        ticket={selectedTicket}
+      />
+
+      <div className="flex-1 w-full overflow-hidden xl:pb-2">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 h-full w-full">
             {KANBAN_COLUMNS.map(column => {
-              const columnTickets = tickets.filter(t => t.status === column.id);
+              const columnTickets = tickets.filter(t => {
+                const matchesSearch = !searchQuery || 
+                  t.title?.toLowerCase().includes(searchQuery) ||
+                  t.id?.toLowerCase().includes(searchQuery) ||
+                  t.description?.toLowerCase().includes(searchQuery);
+                  
+                return matchesSearch && t.status === column.id;
+              });
               
               return (
-                <div key={column.id} className="w-full flex flex-col h-full max-h-[calc(100vh-200px)]">
+                <div key={column.id} className="w-full flex flex-col h-[65vh] min-h-[450px] xl:h-full bg-zinc-50 dark:bg-zinc-900/40 rounded-xl p-3 border border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
                   <div className={`mb-3 px-4 py-2 rounded-lg border flex justify-between items-center ${column.bg}`}>
                     <h3 className="font-semibold text-zinc-800 dark:text-zinc-200">{column.title}</h3>
                     <Badge variant="secondary" className="bg-white/50 dark:bg-zinc-950/50 text-zinc-700 dark:text-zinc-300">
@@ -114,10 +141,14 @@ export default function TicketsPage() {
                     </Badge>
                   </div>
                   
-                  <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
+                  <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-2 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-zinc-200 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full">
                     {columnTickets.map(ticket => (
                       <div 
                         key={ticket.id} 
+                        onClick={() => {
+                          setSelectedTicket(ticket);
+                          setIsDetailsModalOpen(true);
+                        }}
                         // CHANGED: bg-white to make the tickets pop off the canvas
                         className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md dark:hover:border-zinc-700 transition-all cursor-pointer group"
                       >
@@ -132,7 +163,7 @@ export default function TicketsPage() {
                         </p>
                         
                         <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap items-center gap-2 mt-3">
                             <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm ${getPriorityColor(ticket.priority)}`}>
                               {ticket.priority || "Low"}
                             </span>
