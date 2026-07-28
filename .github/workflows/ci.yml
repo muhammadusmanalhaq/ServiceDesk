@@ -25,6 +25,16 @@ jobs:
       - run: dotnet build --no-restore
       - run: dotnet test --no-build
       - run: dotnet list package --vulnerable --include-transitive
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install E2E Dependencies
+        working-directory: ./e2e
+        run: npm ci
+      - name: Run Playwright Tests
+        working-directory: ./e2e
+        run: npx playwright test
 
   build-and-push:
     runs-on: ubuntu-latest

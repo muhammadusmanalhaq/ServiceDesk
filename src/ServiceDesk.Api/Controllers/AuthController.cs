@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.DTOs.Auth;
@@ -19,15 +20,18 @@ public class AuthController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly AppDbContext _db;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
-        AppDbContext db)
+        AppDbContext db,
+        ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _db = db;
+        _logger = logger;
     }
 
     // ─── Register ─────────────────────────────────────────────────────────────
@@ -71,6 +75,7 @@ public class AuthController : ControllerBase
     // ─── Login ────────────────────────────────────────────────────────────────
 
     [HttpPost("login")]
+    [EnableRateLimiting("AuthLimiter")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -113,8 +118,20 @@ public class AuthController : ControllerBase
             .Include(rt => rt.User)
             .FirstOrDefaultAsync(rt => rt.TokenHash == hash);
 
-        if (stored is null || !stored.IsActive)
+        if (stored is null)
             return Unauthorized(new { error = "Refresh token is invalid or expired." });
+
+        if (!stored.IsActive)
+        {
+            _logger.LogWarning("Token reuse detected for user {UserId}. Revoking entire token family.", stored.UserId);
+            var familyTokens = await _db.RefreshTokens.Where(rt => rt.UserId == stored.UserId).ToListAsync();
+            foreach (var rt in familyTokens)
+            {
+                rt.Revoked = true;
+            }
+            await _db.SaveChangesAsync();
+            return Unauthorized(new { error = "Refresh token is invalid or expired." });
+        }
 
         // Revoke the old token BEFORE issuing a new one.
         // IssueAndPersistTokenPair will SaveChangesAsync, persisting the revocation

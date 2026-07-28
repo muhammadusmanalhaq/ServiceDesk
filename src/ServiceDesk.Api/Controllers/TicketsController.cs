@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.DTOs.CoreDomain;
 using ServiceDesk.Api.Models;
+using ServiceDesk.Api.Hubs;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -17,11 +19,13 @@ public class TicketsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IMemoryCache _cache;
+    private readonly IHubContext<TicketHub> _hub;
 
-    public TicketsController(AppDbContext db, IMemoryCache cache)
+    public TicketsController(AppDbContext db, IMemoryCache cache, IHubContext<TicketHub> hub)
     {
         _db = db;
         _cache = cache;
+        _hub = hub;
     }
 
     private Guid CurrentDepartmentId =>
@@ -42,7 +46,8 @@ public class TicketsController : ControllerBase
         t.AssetId, t.DepartmentId, t.AssignedToUserId,
         t.ClaimedByUserId, t.ClaimedAt,
         t.VerifiedByUserId, t.VerifiedAt, t.ResolutionNote,
-        t.SlaDeadline, t.SlaBreached, t.CreatedAt);
+        t.SlaDeadline, t.SlaBreached, t.CreatedAt,
+        t.Attachments?.Select(a => new AttachmentResponse(a.Id, a.BlobPath, a.FileName, a.UploadedByUserId, a.UploadedAt)).ToList());
 
     // ── CRUD ─────────────────────────────────────────────────────────────────
 
@@ -58,7 +63,7 @@ public class TicketsController : ControllerBase
 
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
-        var tickets = await _db.Tickets.AsNoTracking().ToListAsync();
+        var tickets = await _db.Tickets.Include(t => t.Attachments).AsNoTracking().ToListAsync();
 
         await transaction.CommitAsync();
         
@@ -76,7 +81,7 @@ public class TicketsController : ControllerBase
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
-        var ticket = await _db.Tickets.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+        var ticket = await _db.Tickets.Include(t => t.Attachments).AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
 
         await transaction.CommitAsync();
 
@@ -120,8 +125,11 @@ public class TicketsController : ControllerBase
         await transaction.CommitAsync();
 
         _cache.Remove($"Tickets_{CurrentDepartmentId}");
+        
+        var response = ToResponse(ticket);
+        await _hub.Clients.Group(CurrentDepartmentId.ToString()).SendAsync("TicketCreated", response);
 
-        return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ToResponse(ticket));
+        return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, response);
     }
 
     [HttpPut("{id:guid}/status")]
@@ -132,7 +140,7 @@ public class TicketsController : ControllerBase
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
-        var ticket = await _db.Tickets.FindAsync(id);
+        var ticket = await _db.Tickets.Include(t => t.Attachments).FirstOrDefaultAsync(t => t.Id == id);
         if (ticket == null)
         {
             await transaction.CommitAsync();
@@ -152,7 +160,10 @@ public class TicketsController : ControllerBase
 
         _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
-        return Ok(ToResponse(ticket));
+        var response = ToResponse(ticket);
+        await _hub.Clients.Group(CurrentDepartmentId.ToString()).SendAsync("TicketUpdated", response);
+
+        return Ok(response);
     }
 
     [HttpPost("{id:guid}/assign")]
@@ -164,7 +175,7 @@ public class TicketsController : ControllerBase
     {
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
-        var ticket = await _db.Tickets.FindAsync(id);
+        var ticket = await _db.Tickets.Include(t => t.Attachments).FirstOrDefaultAsync(t => t.Id == id);
         if (ticket == null)
         {
             await transaction.CommitAsync();
@@ -181,7 +192,10 @@ public class TicketsController : ControllerBase
 
         _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
-        return Ok(ToResponse(ticket));
+        var response = ToResponse(ticket);
+        await _hub.Clients.Group(CurrentDepartmentId.ToString()).SendAsync("TicketUpdated", response);
+
+        return Ok(response);
     }
 
     // ── Claim / Verify workflow ───────────────────────────────────────────────
@@ -200,7 +214,7 @@ public class TicketsController : ControllerBase
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
         // RLS ensures the ticket is in the Agent's department; if not, FindAsync returns null → 404.
-        var ticket = await _db.Tickets.FindAsync(id);
+        var ticket = await _db.Tickets.Include(t => t.Attachments).FirstOrDefaultAsync(t => t.Id == id);
         if (ticket == null)
         {
             await transaction.CommitAsync();
@@ -249,7 +263,10 @@ public class TicketsController : ControllerBase
 
         _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
-        return Ok(ToResponse(ticket));
+        var response = ToResponse(ticket);
+        await _hub.Clients.Group(CurrentDepartmentId.ToString()).SendAsync("TicketUpdated", response);
+
+        return Ok(response);
     }
 
     /// <summary>
@@ -281,7 +298,7 @@ public class TicketsController : ControllerBase
         await using var transaction = await _db.Database.BeginTransactionAsync();
 
         // RLS ensures the ticket is in the verifier's department. If not → 404.
-        var ticket = await _db.Tickets.FindAsync(id);
+        var ticket = await _db.Tickets.Include(t => t.Attachments).FirstOrDefaultAsync(t => t.Id == id);
         if (ticket == null)
         {
             await transaction.CommitAsync();
@@ -361,6 +378,9 @@ public class TicketsController : ControllerBase
 
         _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
-        return Ok(ToResponse(ticket));
+        var response = ToResponse(ticket);
+        await _hub.Clients.Group(CurrentDepartmentId.ToString()).SendAsync("TicketUpdated", response);
+
+        return Ok(response);
     }
 }

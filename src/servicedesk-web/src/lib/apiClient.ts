@@ -2,13 +2,15 @@ import createClient, { Middleware } from "openapi-fetch";
 import type { paths } from "./api-types";
 
 // Dynamically pull the URL we just injected into the environment
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5093";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5093";
 
 let accessToken: string | null = null;
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
+
+export const getAccessToken = () => accessToken;
 
 export const apiFetch = createClient<paths>({ baseUrl: API_BASE_URL });
 

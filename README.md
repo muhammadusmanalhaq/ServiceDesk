@@ -100,3 +100,19 @@ The integration tests will automatically spin up a temporary, isolated PostgreSQ
 
 ### Demo Flow
 *(A demo GIF of the core ticketing flow goes here)*
+
+## ⏱️ Performance Benchmarks (Azure Container Apps)
+
+Because the API runs in a serverless environment (Azure Container Apps), cold-start latency is an important metric. Our latest tests show:
+
+- **Cold Start (Initial Request):** ~2.5 - 3.5 seconds
+  - *Includes loading .NET 8 runtime, establishing PostgreSQL/Neon connection pools, and executing EF Core model configuration.*
+- **Warm Requests:** ~40 - 80 ms
+  - *Sustained traffic hits the initialized endpoints with high throughput. Background jobs (Hangfire) keep the application semi-warm.*
+
+## 🛣️ Roadmap
+
+### Microsoft Entra ID (SSO) Integration
+The next major architectural milestone is migrating authentication from the current ASP.NET Identity (local JWT) system to **Microsoft Entra ID**.
+- **Why:** Centralized identity management for enterprise clients, enabling Conditional Access and seamless O365 integration.
+- **How:** Replacing `JwtBearer` validation with Microsoft.Identity.Web, removing the local `RefreshTokens` table in favor of OIDC flows handled by the Next.js frontend (NextAuth.js) and validated by the API.

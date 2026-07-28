@@ -1,24 +1,21 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+using Azure;
+using Azure.Communication.Email;
 using ServiceDesk.Api.Data;
+using ServiceDesk.Api.Models;
 
 namespace ServiceDesk.Api.Services;
 
 /// <summary>
-/// Sends transactional emails using MailKit/SMTP.
+/// Sends transactional emails using Azure Communication Services (ACS).
 ///
 /// Configuration (via user-secrets or Key Vault in production):
-///   Email:SmtpHost     — e.g. smtp.brevo.com or smtp.sendgrid.net
-///   Email:SmtpPort     — typically 587 (STARTTLS)
-///   Email:Username     — SMTP login (Brevo: your account email)
-///   Email:Password     — SMTP API key / password
-///   Email:FromAddress  — sender address
-///   Email:FromName     — sender display name
-///   Email:AdminAddress — where breach alerts go (can be a distribution list)
+///   Email:AcsConnectionString — from Azure portal
+///   Email:FromAddress         — e.g. DoNotReply@something.azurecomm.net
+///   Email:AdminAddress        — where breach alerts go (can be a distribution list)
+///   Frontend:Url              — e.g. https://service-desk-mauve.vercel.app
 ///
-/// In development, if Email:SmtpHost is not set, the service logs the email
-/// details instead of sending — no SMTP account needed to run locally.
+/// In development, if AcsConnectionString is not set, it logs the email to console.
+/// In all cases, it writes an AuditLog entry (sent or failed).
 /// </summary>
 public class EmailNotificationService : INotificationService
 {
@@ -48,6 +45,13 @@ public class EmailNotificationService : INotificationService
         }
 
         var subject = $"[SLA BREACH] #{ticket.Id.ToString()[..8]} — {ticket.Title}";
+        
+        var appUrl = _config["Frontend:Url"] ?? "http://localhost:3000";
+        var link = $"{appUrl}/tickets?search={ticket.Id}";
+        
+        var diff = DateTime.UtcNow - ticket.SlaDeadline;
+        var hoursPast = Math.Max(0, (int)diff.TotalHours);
+
         var body = $"""
             SLA Breach Alert
             ----------------
@@ -55,15 +59,25 @@ public class EmailNotificationService : INotificationService
             ID      : {ticket.Id}
             Priority: {ticket.Priority}
             Status  : {ticket.Status}
-            Deadline: {ticket.SlaDeadline:R}
+            Past Due: {hoursPast} hours
             
-            This ticket has exceeded its SLA deadline. Please review and escalate.
+            This ticket has exceeded its SLA deadline. Please review and escalate immediately.
+            
+            View Ticket: {link}
             """;
 
-        await SendEmailAsync(
-            to: _config["Email:AdminAddress"] ?? "admin@servicedesk.local",
-            subject: subject,
-            body: body);
+        var toAddress = _config["Email:AdminAddress"] ?? "admin@servicedesk.local";
+
+        if (!string.IsNullOrEmpty(ticket.AssignedToUserId))
+        {
+            var user = await db.Users.FindAsync(ticket.AssignedToUserId);
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                toAddress = user.Email;
+            }
+        }
+
+        await SendEmailAsync(db, ticket.Id.ToString(), toAddress, subject, body);
     }
 
     public async Task SendAssignmentAlertAsync(Guid ticketId, string assignedToUserId)
@@ -87,50 +101,74 @@ public class EmailNotificationService : INotificationService
             Please log in to ServiceDesk to review and begin work.
             """;
 
-        // If we have the user's email, send directly to them; else fall back to admin
         var toAddress = user?.Email ?? _config["Email:AdminAddress"] ?? "admin@servicedesk.local";
-        await SendEmailAsync(to: toAddress, subject: subject, body: body);
+        await SendEmailAsync(db, ticket.Id.ToString(), toAddress, subject, body);
     }
 
-    // ─── Private ────────────────────────────────────────────────────────────────
-
-    private async Task SendEmailAsync(string to, string subject, string body)
+    private async Task SendEmailAsync(AppDbContext db, string entityId, string to, string subject, string body)
     {
-        var smtpHost = _config["Email:SmtpHost"];
+        var connectionString = _config["Email:AcsConnectionString"];
+        var senderAddress = _config["Email:FromAddress"] ?? "DoNotReply@local.azurecomm.net";
 
-        if (string.IsNullOrWhiteSpace(smtpHost))
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            // Dev mode — no SMTP configured, just log the email
             _logger.LogInformation(
                 "[DEV EMAIL] To: {To} | Subject: {Subject}\n{Body}",
                 to, subject, body);
+            
+            db.AuditLogs.Add(new AuditLog
+            {
+                EntityName = "Email",
+                EntityId = entityId,
+                Action = "Email Logged (Dev Mode)",
+                Timestamp = DateTime.UtcNow,
+                ChangedByUserId = "system",
+                NewValues = System.Text.Json.JsonSerializer.Serialize(new { to, subject })
+            });
+            await db.SaveChangesAsync();
             return;
         }
 
-        var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(
-            _config["Email:FromName"] ?? "ServiceDesk",
-            _config["Email:FromAddress"] ?? "noreply@servicedesk.local"));
-        message.To.Add(MailboxAddress.Parse(to));
-        message.Subject = subject;
-        message.Body = new TextPart("plain") { Text = body };
-
-        using var client = new SmtpClient();
         try
         {
-            var port = int.TryParse(_config["Email:SmtpPort"], out var p) ? p : 587;
-            await client.ConnectAsync(smtpHost, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(_config["Email:Username"], _config["Email:Password"]);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            var emailClient = new EmailClient(connectionString);
+            
+            var emailMessage = new EmailMessage(
+                senderAddress: senderAddress,
+                recipientAddress: to,
+                content: new EmailContent(subject)
+                {
+                    PlainText = body
+                });
 
-            _logger.LogInformation("Email sent: {Subject} → {To}", subject, to);
+            var operation = await emailClient.SendAsync(WaitUntil.Started, emailMessage);
+            _logger.LogInformation("Email sent: {Subject} → {To} (OperationId: {OperationId})", subject, to, operation.Id);
+
+            db.AuditLogs.Add(new AuditLog
+            {
+                EntityName = "Email",
+                EntityId = entityId,
+                Action = "Email Sent",
+                Timestamp = DateTime.UtcNow,
+                ChangedByUserId = "system",
+                NewValues = System.Text.Json.JsonSerializer.Serialize(new { to, subject, status = "Sent", operationId = operation.Id })
+            });
+            await db.SaveChangesAsync();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send email: {Subject} → {To}", subject, to);
-            // Don't rethrow — a failed email shouldn't crash the application or fail
-            // the job. Hangfire will log the exception if needed.
+            
+            db.AuditLogs.Add(new AuditLog
+            {
+                EntityName = "Email",
+                EntityId = entityId,
+                Action = "Email Failed",
+                Timestamp = DateTime.UtcNow,
+                ChangedByUserId = "system",
+                NewValues = System.Text.Json.JsonSerializer.Serialize(new { to, subject, error = ex.Message })
+            });
+            await db.SaveChangesAsync();
         }
     }
 }

@@ -20,7 +20,15 @@ public record TicketResponse(
     // SLA
     DateTime SlaDeadline,
     bool SlaBreached,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    List<AttachmentResponse>? Attachments = null);
+
+public record AttachmentResponse(
+    Guid Id,
+    string BlobPath,
+    string FileName,
+    string UploadedByUserId,
+    DateTime UploadedAt);
 
 public record CreateTicketRequest
 {

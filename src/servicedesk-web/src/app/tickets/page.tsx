@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Plus, Clock, AlertCircle, Loader2, User } from "lucide-react";
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, getAccessToken, API_BASE_URL } from "@/lib/apiClient";
+import * as signalR from "@microsoft/signalr";
 import { components } from "@/lib/api-types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,35 @@ export default function TicketsPage() {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${API_BASE_URL}/hubs/tickets`, {
+        accessTokenFactory: () => token
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("TicketCreated", (ticket: TicketResponse) => {
+      setTickets(prev => {
+        if (prev.some(t => t.id === ticket.id)) return prev;
+        return [...prev, ticket];
+      });
+    });
+
+    connection.on("TicketUpdated", (ticket: TicketResponse) => {
+      setTickets(prev => prev.map(t => t.id === ticket.id ? ticket : t));
+    });
+
+    connection.start().catch(err => console.error("SignalR Connection Error: ", err));
+
+    return () => {
+      connection.stop();
+    };
   }, []);
 
   const getPriorityColor = (priority: string | null | undefined) => {

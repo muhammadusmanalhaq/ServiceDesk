@@ -3,11 +3,16 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.Models;
 using ServiceDesk.Api.Services;
+using ServiceDesk.Api.Hubs;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -108,9 +113,12 @@ builder.Services.AddHangfireServer(opt =>
     opt.Queues = ["default"];
 });
 
-// ─── Controllers + Swagger ───────────────────────────────────────────────────
+// ─── Controllers + Swagger + SignalR + Validation ──────────────────────────
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -141,6 +149,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// ─── Rate Limiting ────────────────────────────────────────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("AuthLimiter", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 5;
+        opt.QueueLimit = 0;
+    });
+});
+
 var app = builder.Build();
 
 // ─── Seed roles and starter departments ──────────────────────────────────────
@@ -164,6 +184,8 @@ app.UseHttpsRedirection();
 
 // Use CORS before Auth
 app.UseCors("AllowNextJs");
+
+app.UseRateLimiter();
 
 // Order matters: Authentication must come before Authorization (and before Hangfire dashboard)
 app.UseAuthentication();
@@ -191,6 +213,7 @@ RecurringJob.AddOrUpdate<SlaCheckJob>(
     });
 
 app.MapControllers();
+app.MapHub<TicketHub>("/hubs/tickets");
 
 // Health endpoint — needed by CI smoke test in Milestone 9
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
