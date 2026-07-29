@@ -5,17 +5,17 @@ ServiceDesk is a full-stack, enterprise-grade ticketing and IT service managemen
 ## 🏗 Architecture
 
 The system is split into two main components:
-1. **Frontend:** Next.js 15 App Router SPA with TailwindCSS, running on `http://localhost:3000`.
-2. **Backend:** ASP.NET Core 8 Web API.
-3. **Database:** PostgreSQL (Neon) with EF Core.
+1. **Frontend:** Next.js 15 App Router SPA (Statically Exported) with TailwindCSS, deployed globally on **Vercel's Edge Network**.
+2. **Backend:** ASP.NET Core 8 Web API deployed on **Azure Container Apps**.
+3. **Database:** Serverless PostgreSQL on **Neon** with EF Core.
 
 ```mermaid
 graph LR
-    User[User/Browser] --> |HTTPS| UI["Next.js 15 Frontend (App Router)"]
-    UI --> |REST API| API[ASP.NET Core 8 API]
+    User[User/Browser] --> |HTTPS| UI["Next.js 15 Frontend (Vercel)"]
+    UI --> |REST API| API[ASP.NET Core 8 API (Azure Container Apps)]
     API --> |EF Core + RLS| DB[(PostgreSQL - Neon)]
     
-    subgraph Azure Container Apps
+    subgraph Azure Cloud
         API
     end
     
@@ -25,16 +25,15 @@ graph LR
     end
 ```
 
-## 🚀 Live Demo (Staging)
+## 🚀 Live Demo (Production)
 
-The application is deployed to Azure Container Apps and can be accessed here:
-- **API (Swagger UI):** [https://ca-servicedesk-api-staging.wittysand-864c0963.uaenorth.azurecontainerapps.io/swagger/index.html](https://ca-servicedesk-api-staging.wittysand-864c0963.uaenorth.azurecontainerapps.io/swagger/index.html)
+The application is fully deployed and live:
+- **Frontend App:** [https://service-desk-mauve.vercel.app](https://service-desk-mauve.vercel.app)
+- **API (Swagger UI):** [https://ca-servicedesk-api.wittysand-864c0963.uaenorth.azurecontainerapps.io/swagger/index.html](https://ca-servicedesk-api.wittysand-864c0963.uaenorth.azurecontainerapps.io/swagger/index.html)
 
-*(Note: The frontend is currently only configured to run locally, connecting to the cloud API.)*
+## 🛠 Developer Guide (Local Setup)
 
-## 🛠 Local Setup
-
-Follow these steps to get the project running locally.
+Follow these steps to get the project running locally for development.
 
 ### 1. Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
