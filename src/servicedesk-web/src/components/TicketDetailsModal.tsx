@@ -59,6 +59,11 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
   useEffect(() => {
     if (isOpen && ticket) {
        fetchActivity();
+       const handleKeyDown = (e: KeyboardEvent) => {
+         if (e.key === 'Escape') onClose();
+       };
+       window.addEventListener('keydown', handleKeyDown);
+       return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, [isOpen, ticket]);
 

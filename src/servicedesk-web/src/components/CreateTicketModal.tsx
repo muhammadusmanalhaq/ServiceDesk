@@ -43,6 +43,12 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
       apiFetch.GET("/api/assets").then(res => {
         if (res.data) setAssets(res.data);
       });
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, [isOpen]);
 
