@@ -17,10 +17,7 @@ jobs:
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: servicedesk_test
         ports: ["5432:5432"]
-      azurite:
-        image: mcr.microsoft.com/azure-storage/azurite
-        ports: ["10000:10000"]
-        options: --command "azurite --loose --skipApiVersionCheck --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0"
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -39,6 +36,8 @@ jobs:
       - name: Install Playwright Browsers
         working-directory: ./e2e
         run: npx playwright install --with-deps
+      - name: Start Azurite Storage Emulator
+        run: docker run -d -p 10000:10000 mcr.microsoft.com/azure-storage/azurite azurite --loose --skipApiVersionCheck --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
       - name: Setup Postgres Roles
         run: |
           psql -h localhost -U postgres -c "CREATE ROLE servicedesk_app WITH LOGIN PASSWORD 'TestPassword123!';"
