@@ -85,6 +85,13 @@ jobs:
       - name: Run Playwright Tests
         working-directory: ./e2e
         run: npx playwright test
+      - name: Upload Playwright Report (Visual Proof)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7
       - name: Dump API Logs on Failure
         if: failure()
         run: |
