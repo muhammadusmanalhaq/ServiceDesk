@@ -39,6 +39,13 @@ jobs:
         run: |
           psql -h localhost -U postgres -d servicedesk_test -c "CREATE ROLE servicedesk_app WITH LOGIN PASSWORD 'testapppass';"
           psql -h localhost -U postgres -d servicedesk_test -c "CREATE ROLE servicedesk_system WITH LOGIN PASSWORD 'systempass' BYPASSRLS;"
+          psql -h localhost -U postgres -d servicedesk_test -c "GRANT CONNECT ON DATABASE servicedesk_test TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "GRANT CREATE ON DATABASE servicedesk_test TO servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "GRANT USAGE ON SCHEMA public TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO servicedesk_app, servicedesk_system;"
         env:
           PGPASSWORD: testpass
       - name: Start Backend API
