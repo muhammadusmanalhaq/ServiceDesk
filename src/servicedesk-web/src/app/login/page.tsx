@@ -37,7 +37,9 @@ function LoginForm() {
         body: { email, password },
       });
 
-      if (res.error) {
+      if (res.response?.status === 429) {
+        setError("Too many attempts, try again in a minute.");
+      } else if (res.error) {
         setError(res.error.title || "Invalid login credentials.");
       } else if (res.data) {
         login(res.data);

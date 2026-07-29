@@ -37,10 +37,12 @@ jobs:
         run: npx playwright install --with-deps
       - name: Setup Postgres Roles
         run: |
-          psql -h localhost -U postgres -c "CREATE ROLE servicedesk_app WITH LOGIN PASSWORD 'TestPassword123!' SUPERUSER;"
+          psql -h localhost -U postgres -c "CREATE ROLE servicedesk_app WITH LOGIN PASSWORD 'TestPassword123!';"
           psql -h localhost -U postgres -c "CREATE ROLE servicedesk_system WITH LOGIN PASSWORD 'TestPassword123!' SUPERUSER;"
           psql -h localhost -U postgres -c "CREATE DATABASE servicedesk_test OWNER servicedesk_system;" || true
           psql -h localhost -U postgres -d servicedesk_test -c "GRANT ALL PRIVILEGES ON DATABASE servicedesk_test TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -d servicedesk_test -c "ALTER DEFAULT PRIVILEGES FOR ROLE servicedesk_system IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO servicedesk_app;"
+          psql -h localhost -U postgres -d servicedesk_test -c "ALTER DEFAULT PRIVILEGES FOR ROLE servicedesk_system IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO servicedesk_app;"
         env:
           PGPASSWORD: testpass
       - name: Start Backend API
