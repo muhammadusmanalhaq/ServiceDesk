@@ -169,7 +169,9 @@ builder.Services.AddRateLimiter(options =>
     options.AddFixedWindowLimiter("AuthLimiter", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = builder.Environment.IsEnvironment("Testing") ? 100 : 5;
+        var permitLimitStr = builder.Configuration["RateLimiting:PermitLimit"];
+        var permitLimit = int.TryParse(permitLimitStr, out var limit) ? limit : 5;
+        opt.PermitLimit = permitLimit;
         opt.QueueLimit = 0;
     });
 });

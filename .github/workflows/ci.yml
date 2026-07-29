@@ -52,6 +52,7 @@ jobs:
           export ConnectionStrings__Default="Host=localhost;Database=servicedesk_test;Username=servicedesk_app;Password=TestPassword123!"
           export ConnectionStrings__System="Host=localhost;Database=servicedesk_test;Username=servicedesk_system;Password=TestPassword123!"
           export Jwt__Key="Test-SuperSecretKey-AtLeast32Characters-2026!"
+          export RateLimiting__PermitLimit="100"
           
           dotnet run --project src/ServiceDesk.Api/ServiceDesk.Api.csproj > api.log 2>&1 &
           
