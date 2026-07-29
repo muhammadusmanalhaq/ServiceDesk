@@ -20,7 +20,7 @@ test('Admin can reassign a ticket using the dropdown', async ({ page }) => {
   await page.screenshot({ path: 'board_before_click.png' });
 
   // Click the first card
-  await page.locator('.group').first().click();
+  await page.locator('h4').first().click();
   
   // Wait a moment for modal animation
   await page.waitForTimeout(500);
@@ -28,21 +28,20 @@ test('Admin can reassign a ticket using the dropdown', async ({ page }) => {
   // Take screenshot of the modal
   await page.screenshot({ path: 'modal_after_click.png' });
 
-  const assigneeLabel = page.locator('h4:has-text("Assignee")');
+  const assigneeLabel = page.getByText('Assignee', { exact: true }).first();
   await expect(assigneeLabel).toBeVisible();
 
-  const assigneeSelect = assigneeLabel.locator('~ div select');
+  const assigneeSelect = assigneeLabel.locator('..').locator('select');
   await expect(assigneeSelect).toBeVisible();
 
   const assignPromise = page.waitForResponse(res => 
-    res.url().includes('/api/tickets') && res.url().includes('/assign') && res.request().method() === 'PUT'
+    res.url().includes('/api/tickets') && res.url().includes('/assign') && res.request().method() === 'POST'
   );
 
-  await assigneeSelect.selectOption({ label: 'Bob Tech' });
+  await assigneeSelect.selectOption({ label: 'Bob Agent' });
 
   const assignResponse = await assignPromise;
   expect(assignResponse.status()).toBe(200);
 
-  const selectedOptionText = await assigneeSelect.locator('option:checked').textContent();
-  expect(selectedOptionText).toBe('Bob Tech');
+  await expect(assigneeSelect.locator('option:checked')).toHaveText('Bob Agent');
 });

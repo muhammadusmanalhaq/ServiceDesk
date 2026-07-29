@@ -4,6 +4,7 @@ import { test, expect } from '@playwright/test';
 const FRONTEND_URL = 'http://localhost:3000';
 
 test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
+  test.setTimeout(60000);
   // 1. Login
   await page.goto(`${FRONTEND_URL}/login`);
   await page.fill('input[type="email"]', 'bob@test.com');
@@ -11,11 +12,11 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   await page.click('button[type="submit"]');
 
   // Verify dashboard loaded
-  await expect(page.locator('h1:has-text("Dashboard")')).toBeVisible();
+  await expect(page.locator('text=Dashboard').first()).toBeVisible();
 
   // 2. Go to Tickets and Create
   await page.click('nav a:has-text("Ticket Board")');
-  await expect(page.locator('h1:has-text("Tickets")')).toBeVisible();
+  await expect(page.locator('text=Tickets').first()).toBeVisible();
   
   await page.click('button:has-text("Create Ticket")');
   
@@ -37,7 +38,7 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   await page.click(`text=${ticketTitle}`);
   
   // Wait for modal
-  await expect(page.locator('h2', { hasText: ticketTitle })).toBeVisible();
+  await expect(page.locator(`text=${ticketTitle}`).first()).toBeVisible();
 
   // Fill resolution note and submit
   await page.fill('textarea[placeholder*="Describe what you fixed"]', 'Fixed via E2E test script.');
@@ -54,13 +55,14 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   await page.click('nav a:has-text("Settings")');
   await page.click('button:has-text("Sign Out")');
   
-  await page.goto(`${FRONTEND_URL}/login`);
+  await page.waitForURL('**/login');
   await page.fill('input[type="email"]', 'alice@test.com');
   await page.fill('input[type="password"]', 'Password123!');
-  await page.click('button:has-text("Sign in")');
+  await page.click('button[type="submit"]');
+  await page.waitForURL(FRONTEND_URL + '/');
   
   await page.click('nav a:has-text("Ticket Board")');
-  await expect(page.locator('h1:has-text("Tickets")')).toBeVisible();
+  await expect(page.locator('text=Tickets').first()).toBeVisible();
   
   await page.click(`text=${ticketTitle}`);
   

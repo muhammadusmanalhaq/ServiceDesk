@@ -29,10 +29,10 @@ const TICKET_ID = '1702d365-0f27-4056-9d32-bb84c62dee67';
   await page.waitForTimeout(2000);
   
   await page.screenshot({ path: '/home/muhammadusmanalhaq/.gemini/antigravity-ide/brain/8d927738-ec8a-48e2-8c78-682062671f1a/modal_proof.png' });
-  console.log('[2] Modal screenshot done');
-  
-  // 3. Locate the assignee select
-  const assigneeSelect = page.locator('h4:has-text("Assignee") ~ div select');
+  const assigneeLabel = page.getByText('Assignee', { exact: true }).first();
+  await expect(assigneeLabel).toBeVisible();
+
+  const assigneeSelect = assigneeLabel.locator('..').locator('select');
   const isVisible = await assigneeSelect.isVisible();
   console.log('[3] Assignee select visible:', isVisible);
   

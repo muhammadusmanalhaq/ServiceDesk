@@ -32,10 +32,10 @@ const ARTIFACTS = '/home/muhammadusmanalhaq/.gemini/antigravity-ide/brain/8d9277
   
   // Take screenshot - should show if overlay is present
   await page.screenshot({ path: `${ARTIFACTS}/FINAL_modal.png` });
-  console.log('[DONE] Modal');
+  const assigneeLabel = page.getByText('Assignee', { exact: true }).first();
+  await expect(assigneeLabel).toBeVisible();
 
-  // Find the assignee dropdown
-  const assigneeSelect = page.locator('h4:has-text("Assignee") ~ div select');
+  const assigneeSelect = assigneeLabel.locator('..').locator('select');
   const selectVisible = await assigneeSelect.isVisible();
   console.log('[INFO] Assignee select visible:', selectVisible);
   
