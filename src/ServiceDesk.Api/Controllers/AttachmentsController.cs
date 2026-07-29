@@ -15,15 +15,20 @@ public class AttachmentsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
+    private readonly Microsoft.Extensions.Caching.Memory.IMemoryCache _cache;
     
-    public AttachmentsController(AppDbContext db, IConfiguration config)
+    public AttachmentsController(AppDbContext db, IConfiguration config, Microsoft.Extensions.Caching.Memory.IMemoryCache cache)
     {
         _db = db;
         _config = config;
+        _cache = cache;
     }
 
     private string CurrentUserId =>
         User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+
+    private Guid CurrentDepartmentId =>
+        Guid.Parse(User.FindFirstValue("department_id") ?? Guid.Empty.ToString());
 
     [HttpPost("generate-sas")]
     public IActionResult GenerateSas([FromBody] GenerateSasRequest request)
@@ -66,9 +71,13 @@ public class AttachmentsController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAttachment([FromBody] RegisterAttachmentRequest request)
     {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
         var ticket = await _db.Tickets.FindAsync(request.TicketId);
         if (ticket == null)
+        {
             return NotFound(new { error = "Ticket not found." });
+        }
 
         var attachment = new Attachment
         {
@@ -82,6 +91,9 @@ public class AttachmentsController : ControllerBase
 
         _db.Attachments.Add(attachment);
         await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
         return Ok(attachment);
     }

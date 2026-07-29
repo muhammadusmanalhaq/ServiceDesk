@@ -87,6 +87,24 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    cors: {
+      corsRules: [
+        {
+          allowedOrigins: ['*']
+          allowedMethods: ['GET', 'PUT', 'OPTIONS']
+          allowedHeaders: ['*']
+          exposedHeaders: ['*']
+          maxAgeInSeconds: 3600
+        }
+      ]
+    }
+  }
+}
+
 // 6. Container App (Deployed ONLY when deployApp == true)
 resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
   name: appName

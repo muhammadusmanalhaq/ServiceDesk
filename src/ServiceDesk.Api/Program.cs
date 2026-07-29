@@ -189,6 +189,32 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 
         await DbSeeder.SeedAsync(scope.ServiceProvider);
     }
+    
+    // Configure CORS for Azurite
+    var storageConnStr = app.Configuration["AzureWebJobsStorage"] ?? app.Configuration["Storage:ConnectionString"];
+    if (!string.IsNullOrEmpty(storageConnStr) && storageConnStr.Contains("UseDevelopmentStorage=true", StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            var blobServiceClient = new Azure.Storage.Blobs.BlobServiceClient(storageConnStr);
+            var properties = await blobServiceClient.GetPropertiesAsync();
+            properties.Value.Cors.Clear();
+            properties.Value.Cors.Add(new Azure.Storage.Blobs.Models.BlobCorsRule
+            {
+                AllowedMethods = "GET,PUT,OPTIONS",
+                AllowedOrigins = "*",
+                AllowedHeaders = "*",
+                ExposedHeaders = "*",
+                MaxAgeInSeconds = 3600
+            });
+            await blobServiceClient.SetPropertiesAsync(properties.Value);
+            app.Logger.LogInformation("Azurite CORS configured.");
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Failed to configure Azurite CORS. Ensure Azurite is running.");
+        }
+    }
 }
 // ─── Middleware pipeline ──────────────────────────────────────────────────────
 app.UseSwagger();

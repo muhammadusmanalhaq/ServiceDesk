@@ -17,6 +17,10 @@ jobs:
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: servicedesk_test
         ports: ["5432:5432"]
+      azurite:
+        image: mcr.microsoft.com/azure-storage/azurite
+        ports: ["10000:10000"]
+        options: --command "azurite --loose --skipApiVersionCheck --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -53,6 +57,7 @@ jobs:
           export ConnectionStrings__System="Host=localhost;Database=servicedesk_test;Username=servicedesk_system;Password=TestPassword123!"
           export Jwt__Key="Test-SuperSecretKey-AtLeast32Characters-2026!"
           export RateLimiting__PermitLimit="100"
+          export Storage__ConnectionString="UseDevelopmentStorage=true"
           
           dotnet run --project src/ServiceDesk.Api/ServiceDesk.Api.csproj > api.log 2>&1 &
           
