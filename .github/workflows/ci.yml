@@ -37,46 +37,61 @@ jobs:
         run: npx playwright install --with-deps
       - name: Setup Postgres Roles
         run: |
-          psql -h localhost -U postgres -d servicedesk_test -c "CREATE ROLE servicedesk_app WITH LOGIN PASSWORD 'testapppass';"
-          psql -h localhost -U postgres -d servicedesk_test -c "CREATE ROLE servicedesk_system WITH LOGIN PASSWORD 'systempass' BYPASSRLS;"
-          psql -h localhost -U postgres -d servicedesk_test -c "GRANT CONNECT ON DATABASE servicedesk_test TO servicedesk_app, servicedesk_system;"
-          psql -h localhost -U postgres -d servicedesk_test -c "GRANT CREATE ON DATABASE servicedesk_test TO servicedesk_system;"
-          psql -h localhost -U postgres -d servicedesk_test -c "GRANT USAGE ON SCHEMA public TO servicedesk_app, servicedesk_system;"
-          psql -h localhost -U postgres -d servicedesk_test -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO servicedesk_app, servicedesk_system;"
-          psql -h localhost -U postgres -d servicedesk_test -c "GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO servicedesk_app, servicedesk_system;"
-          psql -h localhost -U postgres -d servicedesk_test -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO servicedesk_app, servicedesk_system;"
-          psql -h localhost -U postgres -d servicedesk_test -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO servicedesk_app, servicedesk_system;"
+          psql -h localhost -U postgres -c "CREATE ROLE servicedesk_app WITH LOGIN PASSWORD 'TestPassword123!' SUPERUSER;"
+          psql -h localhost -U postgres -c "CREATE ROLE servicedesk_system WITH LOGIN PASSWORD 'TestPassword123!' SUPERUSER;"
+          psql -h localhost -U postgres -c "CREATE DATABASE servicedesk_test OWNER servicedesk_system;" || true
+          psql -h localhost -U postgres -d servicedesk_test -c "GRANT ALL PRIVILEGES ON DATABASE servicedesk_test TO servicedesk_app, servicedesk_system;"
         env:
           PGPASSWORD: testpass
       - name: Start Backend API
-        run: dotnet run --project src/ServiceDesk.Api &
-        env:
-          ASPNETCORE_ENVIRONMENT: Testing
-          ASPNETCORE_URLS: http://127.0.0.1:5093
-          ConnectionStrings__Default: "Host=localhost;Database=servicedesk_test;Username=servicedesk_app;Password=testapppass"
-          ConnectionStrings__System: "Host=localhost;Database=servicedesk_test;Username=servicedesk_system;Password=systempass"
-          Jwt__Key: "Test-SuperSecretKey-AtLeast32Characters-2026!"
-      - name: Wait for Backend
         run: |
-          for i in {1..15}; do
-            curl -s http://127.0.0.1:5093/health && break
-            sleep 2
+          export ASPNETCORE_ENVIRONMENT=Testing
+          export ASPNETCORE_URLS=http://127.0.0.1:5093
+          export ConnectionStrings__Default="Host=localhost;Database=servicedesk_test;Username=servicedesk_app;Password=TestPassword123!"
+          export ConnectionStrings__System="Host=localhost;Database=servicedesk_test;Username=servicedesk_system;Password=TestPassword123!"
+          export Jwt__Key="Test-SuperSecretKey-AtLeast32Characters-2026!"
+          
+          dotnet run --project src/ServiceDesk.Api/ServiceDesk.Api.csproj > api.log 2>&1 &
+          
+          echo "Waiting for API to boot..."
+          for i in {1..30}; do
+            if curl -s http://127.0.0.1:5093/health > /dev/null; then
+              echo "API is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "API failed to start. Printing api.log:"
+              cat api.log
+              exit 1
+            fi
+            sleep 1
           done
       - name: Build and Start Frontend
-        working-directory: ./src/servicedesk-web
         run: |
+          cd src/servicedesk-web
           npm ci
           npm run build
           npx serve@latest out -p 3000 &
-      - name: Wait for Frontend
-        run: |
+          cd ../..
+          
+          echo "Waiting for Frontend to boot..."
           for i in {1..15}; do
-            curl -s http://localhost:3000 && break
-            sleep 2
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Frontend is healthy!"
+              break
+            fi
+            sleep 1
           done
       - name: Run Playwright Tests
         working-directory: ./e2e
         run: npx playwright test
+      - name: Dump API Logs on Failure
+        if: failure()
+        run: |
+          if [ -f api.log ]; then
+            echo "=== API STACK TRACE LOGS ==="
+            cat api.log
+          fi
 
   build-and-push:
     runs-on: ubuntu-latest
