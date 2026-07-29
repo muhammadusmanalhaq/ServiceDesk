@@ -45,13 +45,13 @@ const authMiddleware: Middleware = {
         } else {
           setAccessToken(null);
           if (typeof window !== "undefined") {
-            window.location.href = "/login";
+            window.location.href = "/login?expired=true";
           }
         }
       } catch (err) {
         setAccessToken(null);
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/login?expired=true";
         }
       }
     }
