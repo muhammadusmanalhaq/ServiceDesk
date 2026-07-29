@@ -1,6 +1,18 @@
 # ServiceDesk
 
-ServiceDesk is a full-stack, enterprise-grade ticketing and IT service management platform built with ASP.NET Core 8 and Next.js. It provides robust Role-Based Access Control (RBAC), multi-department isolation via PostgreSQL Row-Level Security (RLS), automated SLA tracking with background jobs, and a complete audit trail.
+[![CI](https://github.com/muhammadusmanalhaq/ServiceDesk/actions/workflows/ci.yml/badge.svg)](https://github.com/muhammadusmanalhaq/ServiceDesk/actions/workflows/ci.yml)
+
+ServiceDesk is a full-stack, enterprise-grade ticketing and IT service management platform built with ASP.NET Core 8 and Next.js.
+
+## ✨ Features
+
+- **Multi-Tenant RLS Isolation**: Strict data segregation between departments enforced directly at the database level.
+- **JWT Authentication**: Secure login with robust refresh token rotation.
+- **Real-Time Updates**: Live ticket status changes broadcasted instantly via SignalR.
+- **SLA Tracking**: Background jobs with automated email alerts for SLA breaches.
+- **File Attachments**: Secure document uploads via Azure Blob Storage SAS tokens.
+- **Audit Trail**: Complete, immutable history with field-level diffs for every ticket.
+- **End-to-End Test Coverage**: CI-tested exhaustive UI suites including a dedicated cross-tenant security test.
 
 ## 🏗 Architecture
 
@@ -11,16 +23,21 @@ The system is split into two main components:
 
 ```mermaid
 graph LR
-    User[User/Browser] --> |HTTPS| UI["Next.js 15 Frontend (Vercel)"]
-    UI --> |REST API| API[ASP.NET Core 8 API (Azure Container Apps)]
-    API --> |EF Core + RLS| DB[(PostgreSQL - Neon)]
+    User["User/Browser"] --> |HTTPS| UI["Next.js 15 Frontend (Vercel)"]
+    UI --> |REST API| API["ASP.NET Core 8 API (Azure Container Apps)"]
+    API --> |EF Core + RLS| DB[("PostgreSQL (Neon)")]
+    API --> |SignalR| UI
+    API --> |SAS Tokens| Blob["Azure Blob Storage"]
+    Jobs["Background Jobs"] --> |SLA Alerts| Email["Azure Communication Services"]
     
     subgraph Azure Cloud
         API
+        Blob
+        Email
     end
     
     subgraph Background Processing
-        API -.-> |Hangfire| Jobs[Background Jobs]
+        API -.-> |Hangfire| Jobs
         Jobs -.-> |SLA Checks| DB
     end
 ```
@@ -86,19 +103,31 @@ The following environment variables (or user secrets) are required for the API:
 | `Jwt__Issuer` | The issuer of the JWT tokens (default: `servicedesk-api`). |
 | `Jwt__Audience` | The intended audience of the JWT tokens (default: `servicedesk-ui`). |
 | `APPLICATIONINSIGHTS_CONNECTION_STRING` | (Optional) Azure Application Insights connection string for OpenTelemetry metrics/tracing. |
+| `RateLimiting__PermitLimit` | (Optional) Override for login rate limit. Default is 5 (brute-force protection); CI overrides this for concurrent test workers. |
 
 ## 🧪 Testing
 
-The solution includes a comprehensive suite of unit and integration tests using **Testcontainers**.
+The solution includes a comprehensive suite of testing layers to guarantee application stability and security.
+
+### Unit & Integration Tests
+The backend test suite uses **Testcontainers** to automatically spin up a temporary, isolated PostgreSQL Docker container, run all migrations, seed data, and tear it down afterward. This guarantees that Row-Level Security (RLS) acts exactly as it does in production.
 ```bash
 dotnet test
 ```
-The integration tests will automatically spin up a temporary, isolated PostgreSQL Docker container, run all migrations, seed data, and tear it down afterward, guaranteeing that Row-Level Security (RLS) acts exactly as it does in production.
 
----
+### End-to-End (E2E) Suite
+The Playwright E2E suite exhaustively covers the UI and core workflows:
+- **Core Workflows**: Complete ticket lifecycle (create → status transitions → verification) and login flows.
+- **UI Coverage**: Thorough interaction testing of modals, dropdowns, filters, and form validation edge cases.
+- **RBAC & RLS Violation Test**: A dedicated cross-tenant test verifies that Row-Level Security genuinely blocks agents from accessing other departments' data at the database level, not just in application logic (asserting a 404 response).
 
-### Demo Flow
-*(A demo GIF of the core ticketing flow goes here)*
+```bash
+cd e2e
+npx playwright test
+```
+
+### Continuous Integration (CI)
+Our CI pipeline runs the full suite (unit, integration, E2E) on every push. Playwright is configured to record video and DOM traces, which are uploaded as downloadable GitHub Actions artifacts on every run.
 
 ## ⏱️ Performance Benchmarks (Azure Container Apps)
 

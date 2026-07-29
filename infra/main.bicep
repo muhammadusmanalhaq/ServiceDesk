@@ -76,6 +76,17 @@ resource kvRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' =
   }
 }
 
+// 5.5 Storage Account for Attachments
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: 'stsd${uniqueSuffix}'
+  location: location
+  sku: { name: 'Standard_LRS' }
+  kind: 'StorageV2'
+  properties: {
+    allowBlobPublicAccess: false
+  }
+}
+
 // 6. Container App (Deployed ONLY when deployApp == true)
 resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
   name: appName
@@ -149,6 +160,10 @@ resource apiApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApp) {
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               secretRef: 'appinsights-connection'
+            }
+            {
+              name: 'Storage__ConnectionString'
+              value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
             }
           ]
           resources: {
