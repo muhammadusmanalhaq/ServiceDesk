@@ -88,8 +88,8 @@
   --status-inprogress-text: #0f766e;
   --status-closed: #64748b;
   --status-closed-text: #334155;
-  --status-pending: #4FD1C5;
-  --status-pending-text: #4338ca;
+  --status-pending: #f97316;
+  --status-pending-text: #c2410c;
   --background: #F7F8FA;
   --foreground: #0B0E14;
   --card: #FFFFFF;
@@ -139,8 +139,8 @@
   --status-inprogress-text: #2dd4bf;
   --status-closed: #94a3b8;
   --status-closed-text: #cbd5e1;
-  --status-pending: #4FD1C5;
-  --status-pending-text: #818cf8;
+  --status-pending: #fb923c;
+  --status-pending-text: #fdba74;
   --background: #0B0E14;
   --foreground: #E6E9EF;
   --card: #141821;
