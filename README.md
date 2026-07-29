@@ -13,12 +13,13 @@ ServiceDesk is a full-stack, enterprise-grade ticketing and IT service managemen
 - **File Attachments**: Secure document uploads via Azure Blob Storage SAS tokens.
 - **Audit Trail**: Complete, immutable history with field-level diffs for every ticket.
 - **End-to-End Test Coverage**: CI-tested exhaustive UI suites including a dedicated cross-tenant security test.
+- **Containerized & Infrastructure-as-Code (IaC)**: Backend containerized via Docker and deployed using Bicep templates for repeatable, declarative cloud infrastructure.
 
 ## 🏗 Architecture
 
 The system is split into two main components:
 1. **Frontend:** Next.js 15 App Router SPA (Statically Exported) with TailwindCSS, deployed globally on **Vercel's Edge Network**.
-2. **Backend:** ASP.NET Core 8 Web API deployed on **Azure Container Apps**.
+2. **Backend:** ASP.NET Core 8 Web API, containerized via Docker, and deployed on **Azure Container Apps**.
 3. **Database:** Serverless PostgreSQL on **Neon** with EF Core.
 
 ```mermaid
@@ -55,7 +56,8 @@ Follow these steps to get the project running locally for development.
 ### 1. Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js](https://nodejs.org/) (v18+)
-- Local PostgreSQL instance, Docker Desktop, or a [Neon](https://neon.tech/) account
+- **Docker Desktop**: Utilized (via `docker-compose`) to seamlessly spin up the local PostgreSQL database required by the API and Hangfire.
+- (Optional) A [Neon](https://neon.tech/) account if you prefer a managed database.
 
 ### 2. Clone the Repository
 ```bash
@@ -119,7 +121,7 @@ dotnet test
 The Playwright E2E suite exhaustively covers the UI and core workflows:
 - **Core Workflows**: Complete ticket lifecycle (create → status transitions → verification) and login flows.
 - **UI Coverage**: Thorough interaction testing of modals, dropdowns, filters, and form validation edge cases.
-- **RBAC & RLS Violation Test**: A dedicated cross-tenant test verifies that Row-Level Security genuinely blocks agents from accessing other departments' data at the database level, not just in application logic (asserting a 404 response).
+- **RBAC & RLS Violation Test**: A dedicated cross-tenant test verifies that Row-Level Security genuinely blocks agents from accessing other departments' data at the database level, not just in application logic (asserting a 404 response). This automated test acts as a regression guardrail, mathematically proving that no application-layer bug can ever leak cross-department data.
 
 ```bash
 cd e2e
