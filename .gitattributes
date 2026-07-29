@@ -1,0 +1,10 @@
+# Ignore build outputs and test reports for language stats
+playwright-report/** linguist-generated
+test-results/** linguist-generated
+out/** linguist-generated
+.next/** linguist-generated
+
+# (Optional) Explicitly force C# and TS to be recognized
+*.cs linguist-detectable
+*.ts linguist-detectable
+*.tsx linguist-detectable
