@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
 
 interface CreateAssetModalProps {
@@ -58,16 +59,20 @@ export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments 
         if (res.error.errors && typeof res.error.errors === 'object') {
           const validationErrors = Object.values(res.error.errors).flat().join(" | ");
           setError(`Validation Failed: ${validationErrors}`);
+          toast.error(`Validation Failed: ${validationErrors}`);
         } else {
           setError(res.error.title || "Failed to create asset");
+          toast.error(res.error.title || "Failed to create asset");
         }
       } else {
+        toast.success("Asset created successfully");
         setFormData({ name: "", departmentId: "", status: "Active" });
         onAssetCreated();
         onClose();
       }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
+      toast.error(err.message || "An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +103,7 @@ export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments 
               required 
               value={formData.name} 
               onChange={e => setFormData({...formData, name: e.target.value})} 
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors" 
             />
           </div>
 
@@ -109,7 +114,7 @@ export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments 
               required
               value={formData.departmentId} 
               onChange={e => setFormData({...formData, departmentId: e.target.value})}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
             >
               <option value="" disabled className="text-zinc-500 dark:text-zinc-400">(Select Department)</option>
               <option value="11111111-1111-1111-1111-111111111111">IT</option>
@@ -125,7 +130,7 @@ export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments 
               required
               value={formData.status} 
               onChange={e => setFormData({...formData, status: e.target.value})}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
@@ -138,7 +143,7 @@ export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments 
             <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting} className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+            <button type="submit" disabled={isSubmitting} className="flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Asset"}
             </button>
           </div>

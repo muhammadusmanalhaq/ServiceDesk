@@ -1,0 +1,28 @@
+const { chromium } = require('playwright');
+const ARTIFACTS_DIR = '/home/muhammadusmanalhaq/.gemini/antigravity-ide/brain/8d927738-ec8a-48e2-8c78-682062671f1a';
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  
+  await page.goto('http://localhost:3000/login');
+  await page.fill('input[type="email"]', 'bob@test.com');
+  await page.fill('input[type="password"]', 'Password123!');
+  await page.click('button:has-text("Sign in")');
+  await page.waitForTimeout(2000); 
+  await page.click('nav a:has-text("Ticket Board")');
+  await page.waitForTimeout(2000);
+  await page.click('button:has-text("Create Ticket")');
+  await page.waitForTimeout(1000);
+  await page.fill('input#title', 'E2E Test Ticket');
+  await page.fill('textarea#description', 'This is an E2E test issue description.');
+  await page.selectOption('select#department', { index: 1 });
+  await page.selectOption('select#priority', 'Medium');
+  await page.click('form button[type="submit"]');
+  await page.waitForTimeout(2000);
+  
+  const errorText = await page.locator('.text-red-600').first().textContent().catch(() => 'No error');
+  console.log("Error text:", errorText);
+  await page.screenshot({ path: `${ARTIFACTS_DIR}/modal_error2.png` });
+  await browser.close();
+})();

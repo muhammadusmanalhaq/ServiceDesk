@@ -54,7 +54,7 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
     <header className="w-full h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm sticky top-0 z-10 px-4 sm:px-6 flex items-center justify-between flex-shrink-0 transition-colors">
       <div className="flex-1 flex items-center">
         <button 
-          className="md:hidden mr-4 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+          className="md:hidden mr-4 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-md"
           onClick={onMenuClick}
         >
           <Menu className="h-6 w-6" />
@@ -69,7 +69,7 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleSearch}
-            className="block w-full pl-10 pr-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg leading-5 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+            className="block w-full pl-10 pr-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg leading-5 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 sm:text-sm transition-colors"
             placeholder="Search tickets by ID, title, or description..."
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -81,7 +81,7 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
       <div className="flex items-center space-x-4">
         {mounted && (
           <button 
-            className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+            className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-md p-1"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle Dark Mode"
           >
@@ -90,12 +90,12 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
         )}
         
         <div className="relative" ref={dropdownRef}>
-          <div 
+          <button 
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="h-9 w-9 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center overflow-hidden cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            className="h-9 w-9 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center overflow-hidden cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <User className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
-          </div>
+          </button>
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 py-1 z-50">

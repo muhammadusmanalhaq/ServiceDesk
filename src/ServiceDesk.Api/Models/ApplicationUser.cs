@@ -9,6 +9,7 @@ namespace ServiceDesk.Api.Models;
 public class ApplicationUser : IdentityUser
 {
     public string FullName { get; set; } = "";
+    public string? AvatarUrl { get; set; }
 
     /// <summary>
     /// Drives the 'department_id' JWT claim and the Postgres RLS session variable.

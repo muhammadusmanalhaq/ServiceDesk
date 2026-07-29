@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -168,6 +169,31 @@ public class AuthController : ControllerBase
 
         Response.Cookies.Delete("refreshToken");
         return NoContent();
+    }
+
+    // ─── Profile ─────────────────────────────────────────────────────────────
+
+    [HttpPut("profile")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return NotFound();
+
+        user.FullName = request.FullName;
+        user.AvatarUrl = request.AvatarUrl;
+
+        await _userManager.UpdateAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "Agent";
+        var accessToken = _tokenService.GenerateAccessToken(user, role);
+
+        return Ok(BuildAuthResponse(user, accessToken, role));
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────────

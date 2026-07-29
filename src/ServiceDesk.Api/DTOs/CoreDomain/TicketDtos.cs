@@ -4,6 +4,7 @@ namespace ServiceDesk.Api.DTOs.CoreDomain;
 
 public record TicketResponse(
     Guid Id,
+    int TicketNumber,
     string Title,
     string Description,
     string Status,
@@ -92,3 +93,17 @@ public record NotificationResponse(
     Guid? TicketId,
     bool IsRead,
     DateTime CreatedAt);
+
+public record TicketCommentResponse(
+    Guid Id,
+    Guid TicketId,
+    string UserId,
+    string AuthorName,
+    string? AuthorAvatarUrl,
+    string Content,
+    DateTime CreatedAt
+);
+
+public record CreateTicketCommentRequest(
+    [Required] string Content
+);

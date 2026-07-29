@@ -30,3 +30,8 @@ public record AuthResponse(
     string Role,
     Guid DepartmentId
 );
+
+public record UpdateProfileRequest(
+    [Required] string FullName,
+    string? AvatarUrl
+);

@@ -162,6 +162,9 @@ namespace ServiceDesk.Api.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -452,6 +455,13 @@ namespace ServiceDesk.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("TicketNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TicketNumber"));
+                    NpgsqlPropertyBuilderExtensions.HasIdentityOptions(b.Property<int>("TicketNumber"), 1000L, null, null, null, null, null);
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -477,6 +487,35 @@ namespace ServiceDesk.Api.Migrations
                     b.HasIndex("VerifiedByUserId");
 
                     b.ToTable("Tickets");
+                });
+
+            modelBuilder.Entity("ServiceDesk.Api.Models.TicketComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TicketId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TicketComments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -555,7 +594,7 @@ namespace ServiceDesk.Api.Migrations
             modelBuilder.Entity("ServiceDesk.Api.Models.Attachment", b =>
                 {
                     b.HasOne("ServiceDesk.Api.Models.Ticket", "Ticket")
-                        .WithMany()
+                        .WithMany("Attachments")
                         .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -633,6 +672,25 @@ namespace ServiceDesk.Api.Migrations
                     b.Navigation("VerifiedByUser");
                 });
 
+            modelBuilder.Entity("ServiceDesk.Api.Models.TicketComment", b =>
+                {
+                    b.HasOne("ServiceDesk.Api.Models.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServiceDesk.Api.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ServiceDesk.Api.Models.ApplicationUser", b =>
                 {
                     b.Navigation("RefreshTokens");
@@ -645,6 +703,11 @@ namespace ServiceDesk.Api.Migrations
                     b.Navigation("Tickets");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("ServiceDesk.Api.Models.Ticket", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 #pragma warning restore 612, 618
         }

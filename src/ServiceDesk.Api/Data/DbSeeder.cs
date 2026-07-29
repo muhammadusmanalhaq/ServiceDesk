@@ -34,6 +34,7 @@ public static class DbSeeder
         }
 
         // Create Seed Users if they don't exist
+        await EnsureUser(userManager, "admin@servicedesk.local", "Admin", ItDeptId, "System Admin");
         await EnsureUser(userManager, "alice@test.com", "Admin", ItDeptId, "Alice Admin");
         await EnsureUser(userManager, "bob@test.com", "Agent", ItDeptId, "Bob Agent");
         await EnsureUser(userManager, "charlie@test.com", "Manager", OpsDeptId, "Charlie Manager");

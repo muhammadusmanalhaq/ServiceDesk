@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MainLayout } from "@/components/MainLayout";
 import { AuthProvider } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-const inter = Inter({ subsets: ["latin"] });
+const plexSans = IBM_Plex_Sans({ 
+  subsets: ["latin"], 
+  weight: ["400", "500", "600", "700"], 
+  variable: "--font-sans" 
+});
+
+const plexMono = IBM_Plex_Mono({ 
+  subsets: ["latin"], 
+  weight: ["400", "500", "600", "700"], 
+  variable: "--font-mono" 
+});
 
 export const metadata: Metadata = {
   title: "Enterprise Service Desk",
@@ -20,12 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
-      {/* 
-        Changed bg-zinc-100 to bg-zinc-50 to stop light-mode eye strain 
-        Changed dark bg to zinc-950 for a true, deep black 
-      */}
-      <body className={cn("min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 antialiased transition-colors", inter.className)}>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", plexSans.variable, plexMono.variable)}>
+      <body className={cn("min-h-screen antialiased transition-colors", plexSans.className)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

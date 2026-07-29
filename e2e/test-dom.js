@@ -1,0 +1,32 @@
+const { chromium } = require('playwright');
+const ARTIFACTS_DIR = '/home/muhammadusmanalhaq/.gemini/antigravity-ide/brain/8d927738-ec8a-48e2-8c78-682062671f1a';
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  
+  await page.goto('http://localhost:3000/login');
+  await page.fill('input[type="email"]', 'bob@test.com');
+  await page.fill('input[type="password"]', 'Password123!');
+  await page.click('button:has-text("Sign in")');
+  await page.waitForTimeout(2000); 
+  await page.click('nav a:has-text("Ticket Board")');
+  await page.waitForTimeout(2000);
+  await page.click('button:has-text("Create Ticket")');
+  await page.waitForTimeout(1000);
+  const ticketTitle = `E2E Test Ticket ${Date.now()}`;
+  await page.fill('input[placeholder*="title"]', ticketTitle);
+  await page.fill('textarea[placeholder*="Describe"]', 'This is an E2E test issue description.');
+  await page.selectOption('select#department', { index: 1 });
+  await page.selectOption('select#priority', 'Medium');
+  await page.click('form button[type="submit"]');
+  await page.waitForTimeout(3000);
+  
+  await page.screenshot({ path: `${ARTIFACTS_DIR}/kanban_after_create.png` });
+  
+  const html = await page.content();
+  console.log("Looking for:", ticketTitle);
+  console.log("Is in HTML:", html.includes(ticketTitle));
+  
+  await browser.close();
+})();

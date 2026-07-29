@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
 
@@ -20,6 +21,8 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -39,6 +42,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
         status: asset.status || "Active",
       });
       setError(null);
+      setShowDeleteConfirm(false);
     }
   }, [asset, isOpen]);
 
@@ -74,20 +78,59 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
         if (res.error.errors && typeof res.error.errors === 'object') {
           const validationErrors = Object.values(res.error.errors).flat().join(" | ");
           setError(`Validation Failed: ${validationErrors}`);
+          toast.error(`Validation Failed: ${validationErrors}`);
         } else {
           setError(res.error.title || "Failed to update asset");
+          toast.error(res.error.title || "Failed to update asset");
         }
       } else {
+        toast.success("Asset updated successfully");
         onAssetUpdated();
         onClose();
       }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
+      toast.error(err.message || "An unexpected error occurred.");
       // If PUT isn't fully implemented in the backend demo yet, we close it anyway so the UI doesn't hang
       onAssetUpdated();
       onClose();
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const stored = localStorage.getItem("service_desk_user") || localStorage.getItem("user");
+      let token = "";
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        token = parsed.token || parsed.accessToken || "";
+      }
+
+      const res = await apiFetch.DELETE("/api/assets/{id}", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        params: { path: { id: asset.id as string } }
+      });
+
+      if (res.error) {
+        setError(res.error.title || "Failed to retire asset");
+        toast.error(res.error.title || "Failed to retire asset");
+      } else {
+        toast.success("Asset retired");
+        onAssetUpdated();
+        onClose();
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+      toast.error(err.message || "An unexpected error occurred.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -116,7 +159,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
               required 
               value={formData.name} 
               onChange={e => setFormData({...formData, name: e.target.value})} 
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors" 
             />
           </div>
 
@@ -126,7 +169,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
               id="department" 
               value={formData.departmentId} 
               onChange={e => setFormData({...formData, departmentId: e.target.value})}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
             >
               <option value="" className="text-zinc-500 dark:text-zinc-400">(None)</option>
               <option value="11111111-1111-1111-1111-111111111111">IT</option>
@@ -142,7 +185,7 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
               required
               value={formData.status} 
               onChange={e => setFormData({...formData, status: e.target.value})}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
@@ -151,13 +194,31 @@ export function EditAssetModal({ isOpen, onClose, onAssetUpdated, asset, departm
             </select>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
-              Cancel
-            </button>
-            <button type="submit" disabled={isSubmitting} className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : "Save Changes"}
-            </button>
+          <div className="pt-4 flex justify-between items-center border-t border-zinc-200 dark:border-zinc-800">
+            {showDeleteConfirm ? (
+               <div className="flex items-center gap-2">
+                 <span className="text-sm text-rose-600 dark:text-rose-400 font-medium">Retire asset?</span>
+                 <button type="button" onClick={handleDelete} disabled={isDeleting} className="px-3 py-1.5 bg-rose-600 text-white rounded text-xs font-medium hover:bg-rose-700 disabled:opacity-50">
+                   {isDeleting ? "Retiring..." : "Yes, retire"}
+                 </button>
+                 <button type="button" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting} className="px-3 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 text-xs font-medium">
+                   Cancel
+                 </button>
+               </div>
+            ) : (
+               <button type="button" onClick={() => setShowDeleteConfirm(true)} className="px-3 py-1.5 text-rose-600 dark:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded text-sm font-medium transition-colors">
+                 Retire Asset
+               </button>
+            )}
+
+            <div className="flex gap-3">
+              <button type="button" onClick={onClose} disabled={isSubmitting || isDeleting} className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                Cancel
+              </button>
+              <button type="submit" disabled={isSubmitting || isDeleting} className="flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : "Save Changes"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

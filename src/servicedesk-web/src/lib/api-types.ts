@@ -174,6 +174,84 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attachments/generate-sas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["GenerateSasRequest"];
+                    "text/json": components["schemas"]["GenerateSasRequest"];
+                    "application/*+json": components["schemas"]["GenerateSasRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attachments/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["RegisterAttachmentRequest"];
+                    "text/json": components["schemas"]["RegisterAttachmentRequest"];
+                    "application/*+json": components["schemas"]["RegisterAttachmentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audit-logs/{entityName}/{entityId}": {
         parameters: {
             query?: never;
@@ -426,6 +504,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProfileRequest"];
+                    "text/json": components["schemas"]["UpdateProfileRequest"];
+                    "application/*+json": components["schemas"]["UpdateProfileRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/departments": {
         parameters: {
             query?: never;
@@ -459,6 +578,151 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/metrics/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotificationResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         trace?: never;
     };
     "/health": {
@@ -755,6 +1019,234 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tickets/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TicketCommentResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateTicketCommentRequest"];
+                    "text/json": components["schemas"]["CreateTicketCommentRequest"];
+                    "application/*+json": components["schemas"]["CreateTicketCommentRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TicketCommentResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/{id}/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ClaimTicketRequest"];
+                    "text/json": components["schemas"]["ClaimTicketRequest"];
+                    "application/*+json": components["schemas"]["ClaimTicketRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TicketResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["VerifyTicketRequest"];
+                    "text/json": components["schemas"]["VerifyTicketRequest"];
+                    "application/*+json": components["schemas"]["VerifyTicketRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TicketResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/WeatherForecast": {
         parameters: {
             query?: never;
@@ -786,6 +1278,15 @@ export interface components {
         AssignTicketRequest: {
             userId: string;
         };
+        AttachmentResponse: {
+            /** Format: uuid */
+            id?: string;
+            blobPath?: string | null;
+            fileName?: string | null;
+            uploadedByUserId?: string | null;
+            /** Format: date-time */
+            uploadedAt?: string;
+        };
         AuditLogResponse: {
             /** Format: int64 */
             id?: number;
@@ -810,9 +1311,15 @@ export interface components {
             /** Format: uuid */
             departmentId?: string;
         };
+        ClaimTicketRequest: {
+            resolutionNote?: string | null;
+        };
         CreateAssetRequest: {
             name: string;
             status: string;
+        };
+        CreateTicketCommentRequest: {
+            content?: string | null;
         };
         CreateTicketRequest: {
             title: string;
@@ -826,9 +1333,23 @@ export interface components {
             id?: string;
             name?: string | null;
         };
+        GenerateSasRequest: {
+            fileName?: string | null;
+        };
         LoginRequest: {
             email?: string | null;
             password?: string | null;
+        };
+        NotificationResponse: {
+            /** Format: uuid */
+            id?: string;
+            type?: string | null;
+            message?: string | null;
+            /** Format: uuid */
+            ticketId?: string | null;
+            isRead?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
         };
         ProblemDetails: {
             type?: string | null;
@@ -840,6 +1361,12 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        RegisterAttachmentRequest: {
+            /** Format: uuid */
+            ticketId?: string;
+            blobPath?: string | null;
+            fileName?: string | null;
+        };
         RegisterRequest: {
             fullName?: string | null;
             email?: string | null;
@@ -848,9 +1375,23 @@ export interface components {
             departmentId?: string;
             role?: string | null;
         };
+        TicketCommentResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            ticketId?: string;
+            userId?: string | null;
+            authorName?: string | null;
+            authorAvatarUrl?: string | null;
+            content?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+        };
         TicketResponse: {
             /** Format: uuid */
             id?: string;
+            /** Format: int32 */
+            ticketNumber?: number;
             title?: string | null;
             description?: string | null;
             status?: string | null;
@@ -860,18 +1401,34 @@ export interface components {
             /** Format: uuid */
             departmentId?: string;
             assignedToUserId?: string | null;
+            claimedByUserId?: string | null;
+            /** Format: date-time */
+            claimedAt?: string | null;
+            verifiedByUserId?: string | null;
+            /** Format: date-time */
+            verifiedAt?: string | null;
+            resolutionNote?: string | null;
             /** Format: date-time */
             slaDeadline?: string;
             slaBreached?: boolean;
             /** Format: date-time */
             createdAt?: string;
+            attachments?: components["schemas"]["AttachmentResponse"][] | null;
         };
         UpdateAssetRequest: {
             name: string;
             status: string;
         };
+        UpdateProfileRequest: {
+            fullName?: string | null;
+            avatarUrl?: string | null;
+        };
         UpdateTicketStatusRequest: {
             status: string;
+        };
+        VerifyTicketRequest: {
+            accept: boolean;
+            resolutionNote?: string | null;
         };
         WeatherForecast: {
             /** Format: date */

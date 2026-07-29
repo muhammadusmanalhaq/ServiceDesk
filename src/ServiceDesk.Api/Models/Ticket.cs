@@ -3,6 +3,10 @@ namespace ServiceDesk.Api.Models;
 public class Ticket
 {
     public Guid Id { get; set; }
+    
+    // Human-readable sequential ID (e.g. #1042)
+    public int TicketNumber { get; set; }
+
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
 
@@ -46,4 +50,6 @@ public class Ticket
     public bool SlaBreached { get; set; }
     
     public DateTime CreatedAt { get; set; }
+
+    public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 }

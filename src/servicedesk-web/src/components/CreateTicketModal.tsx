@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
 
@@ -82,16 +83,20 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
         if (res.error.errors && typeof res.error.errors === 'object') {
           const validationErrors = Object.values(res.error.errors).flat().join(" | ");
           setError(`Validation Failed: ${validationErrors}`);
+          toast.error(`Validation Failed: ${validationErrors}`);
         } else {
           setError(res.error.title || res.error.message || "Failed to create ticket.");
+          toast.error(res.error.title || res.error.message || "Failed to create ticket.");
         }
       } else {
+        toast.success("Ticket created successfully");
         setFormData({ title: "", description: "", departmentId: "", assetId: "", priority: "Medium" });
         onTicketCreated();
         onClose();
       }
     } catch (err: any) {
       setError(err.message || "An unexpected network error occurred.");
+      toast.error(err.message || "An unexpected network error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -122,7 +127,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               required 
               value={formData.title} 
               onChange={e => setFormData({...formData, title: e.target.value})} 
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors" 
               placeholder="E.g., Cannot access email" 
             />
           </div>
@@ -135,7 +140,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               rows={3} 
               value={formData.description} 
               onChange={e => setFormData({...formData, description: e.target.value})} 
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors" 
               placeholder="Describe the issue in detail..." 
             />
           </div>
@@ -148,7 +153,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
                 required 
                 value={formData.departmentId} 
                 onChange={e => setFormData({...formData, departmentId: e.target.value})}
-                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
               >
                 <option value="" disabled className="text-zinc-500 dark:text-zinc-400">(Select Department)</option>
                 {departments.map(d => (
@@ -164,7 +169,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
                 required
                 value={formData.priority} 
                 onChange={e => setFormData({...formData, priority: e.target.value})}
-                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -180,7 +185,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               id="asset" 
               value={formData.assetId} 
               onChange={e => setFormData({...formData, assetId: e.target.value})}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
             >
               <option value="" className="text-zinc-500 dark:text-zinc-400">(None)</option>
               {assets.map(a => (
@@ -193,7 +198,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
             <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting} className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+            <button type="submit" disabled={isSubmitting} className="flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Ticket"}
             </button>
           </div>

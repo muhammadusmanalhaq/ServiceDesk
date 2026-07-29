@@ -73,6 +73,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.Zero
         };
+        opt.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -83,7 +96,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNextJs", policy =>
     {
         policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
-              .SetIsOriginAllowed(origin => origin.EndsWith(".vercel.app") || origin.EndsWith("service-desk-mauve.vercel.app"))
+              .SetIsOriginAllowed(origin => origin.StartsWith("http://localhost") || origin.EndsWith(".vercel.app") || origin.EndsWith("service-desk-mauve.vercel.app"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -164,13 +177,16 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 
 // ─── Seed roles and starter departments ──────────────────────────────────────
-using (var scope = app.Services.CreateScope())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
-    var systemFactory = scope.ServiceProvider.GetRequiredService<SystemDbContextFactory>();
-    using var systemDb = systemFactory.CreateSystemContext();
-    await systemDb.Database.MigrateAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var systemFactory = scope.ServiceProvider.GetRequiredService<SystemDbContextFactory>();
+        using var systemDb = systemFactory.CreateSystemContext();
+        await systemDb.Database.MigrateAsync();
 
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
+        await DbSeeder.SeedAsync(scope.ServiceProvider);
+    }
 }
 // ─── Middleware pipeline ──────────────────────────────────────────────────────
 app.UseSwagger();

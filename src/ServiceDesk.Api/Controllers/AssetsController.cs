@@ -120,7 +120,7 @@ public class AssetsController : ControllerBase
             return NotFound();
         }
 
-        _db.Assets.Remove(asset);
+        asset.Status = "Retired";
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 

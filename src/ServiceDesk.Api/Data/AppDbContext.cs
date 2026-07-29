@@ -34,6 +34,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<TicketComment> TicketComments => Set<TicketComment>();
 
     // ─── Audit trail ─────────────────────────────────────────────────────────────
 
@@ -144,6 +145,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(t => t.AssignedToUserId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // TicketNumber Identity
+        modelBuilder.Entity<Ticket>()
+            .Property(t => t.TicketNumber)
+            .UseIdentityColumn()
+            .HasIdentityOptions(startValue: 1000);
 
         // Ticket → ClaimedByUser
         modelBuilder.Entity<Ticket>()

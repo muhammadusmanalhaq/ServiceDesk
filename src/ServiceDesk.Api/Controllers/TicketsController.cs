@@ -42,7 +42,7 @@ public class TicketsController : ControllerBase
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static TicketResponse ToResponse(Ticket t) => new(
-        t.Id, t.Title, t.Description, t.Status, t.Priority,
+        t.Id, t.TicketNumber, t.Title, t.Description, t.Status, t.Priority,
         t.AssetId, t.DepartmentId, t.AssignedToUserId,
         t.ClaimedByUserId, t.ClaimedAt,
         t.VerifiedByUserId, t.VerifiedAt, t.ResolutionNote,
@@ -196,6 +196,66 @@ public class TicketsController : ControllerBase
         await _hub.Clients.Group(CurrentDepartmentId.ToString()).SendAsync("TicketUpdated", response);
 
         return Ok(response);
+    }
+
+    // ── Comments ──────────────────────────────────────────────────────────────
+
+    [HttpGet("{id:guid}/comments")]
+    [ProducesResponseType(typeof(IEnumerable<TicketCommentResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetComments(Guid id)
+    {
+        var comments = await _db.TicketComments
+            .Include(c => c.User)
+            .Where(c => c.TicketId == id)
+            .OrderBy(c => c.CreatedAt)
+            .Select(c => new TicketCommentResponse(
+                c.Id,
+                c.TicketId,
+                c.UserId,
+                c.User.FullName,
+                c.User.AvatarUrl,
+                c.Content,
+                c.CreatedAt
+            ))
+            .ToListAsync();
+
+        return Ok(comments);
+    }
+
+    [HttpPost("{id:guid}/comments")]
+    [ProducesResponseType(typeof(TicketCommentResponse), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateComment(Guid id, [FromBody] CreateTicketCommentRequest request)
+    {
+        var ticket = await _db.Tickets.FindAsync(id);
+        if (ticket is null) return NotFound();
+
+        var userId = CurrentUserId;
+        var user = await _db.Users.FindAsync(userId);
+        if (user is null) return Unauthorized();
+
+        var comment = new TicketComment
+        {
+            TicketId = id,
+            UserId = userId,
+            Content = request.Content,
+            CreatedAt = DateTime.UtcNow,
+            User = user
+        };
+
+        _db.TicketComments.Add(comment);
+        await _db.SaveChangesAsync();
+
+        var response = new TicketCommentResponse(
+            comment.Id,
+            comment.TicketId,
+            comment.UserId,
+            user.FullName,
+            user.AvatarUrl,
+            comment.Content,
+            comment.CreatedAt
+        );
+
+        return CreatedAtAction(nameof(GetComments), new { id = ticket.Id }, response);
     }
 
     // ── Claim / Verify workflow ───────────────────────────────────────────────
