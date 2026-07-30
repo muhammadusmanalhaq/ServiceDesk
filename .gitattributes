@@ -1,10 +1,17 @@
-# Ignore build outputs and test reports for language stats
-playwright-report/** linguist-generated
-test-results/** linguist-generated
-out/** linguist-generated
-.next/** linguist-generated
+# Explicitly force GitHub to recognize our actual backend/frontend languages
+*.cs linguist-detectable=true
+*.ts linguist-detectable=true
+*.tsx linguist-detectable=true
 
-# (Optional) Explicitly force C# and TS to be recognized
-*.cs linguist-detectable
-*.ts linguist-detectable
-*.tsx linguist-detectable
+# Force hide all HTML files globally from language statistics
+*.html linguist-detectable=false
+*.htm linguist-detectable=false
+
+# Mark any deeply nested build/test artifacts as generated (Linguist ignores these)
+**/playwright-report/** linguist-generated=true
+**/test-results/** linguist-generated=true
+**/out/** linguist-generated=true
+**/.next/** linguist-generated=true
+**/wwwroot/** linguist-generated=true
+**/bin/** linguist-generated=true
+**/obj/** linguist-generated=true
