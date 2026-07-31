@@ -124,8 +124,8 @@ test.describe('Exhaustive Ticket Flow Matrix', () => {
     // Change the Assignee dropdown to a different user
     // The assignee dropdown is the second select element that contains "Unassigned"
     const assigneeSelect = page.locator('div:has(> h4:has-text("Assignee")) select');
-    // Select Bob Agent (we know his name is "Bob Agent" from db seeder, but we can also just select index 1)
-    await assigneeSelect.selectOption({ index: 2 });
+    // Select Bob Agent explicitly by label instead of index, as JS Object.values(users) order is non-deterministic (GUID keys)
+    await assigneeSelect.selectOption({ label: 'Bob Agent' });
     
     // Assert the UI updates instantly
     await expect(page.locator('text=/Assigned to/').first()).toBeVisible();
