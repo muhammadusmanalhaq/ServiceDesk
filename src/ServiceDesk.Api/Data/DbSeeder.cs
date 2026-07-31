@@ -69,8 +69,19 @@ public static class DbSeeder
         }
 
         // ── Tickets ────────────────────────────────────────────────────────────
-        if (!db.Tickets.Any())
+        // We check for a specific ticket title rather than Any() so that re-deploys
+        // correctly add the rich demo dataset even if old seed tickets already exist.
+        bool richTicketsSeeded = db.Tickets.Any(t => t.Title == "CRITICAL: Domain Controller unreachable");
+        if (!richTicketsSeeded)
         {
+            // Remove the old generic seed tickets so the board looks clean
+            var oldSeedTickets = db.Tickets.Where(t => t.Title.StartsWith("Seed Ticket #")).ToList();
+            if (oldSeedTickets.Any())
+            {
+                db.Tickets.RemoveRange(oldSeedTickets);
+                await db.SaveChangesAsync();
+            }
+
             var itAssets  = db.Assets.Where(a => a.DepartmentId == ItDeptId).ToList();
             var opsAssets = db.Assets.Where(a => a.DepartmentId == OpsDeptId).ToList();
 
