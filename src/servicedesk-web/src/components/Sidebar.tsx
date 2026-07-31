@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Ticket, Monitor, ScrollText, Settings, X } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,14 +12,19 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const role = user?.role ?? "Agent";
 
-  const navItems = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Ticket Board", href: "/tickets", icon: Ticket },
-    { name: "Asset Registry", href: "/assets", icon: Monitor },
-    { name: "Audit Logs", href: "/audit", icon: ScrollText },
-    { name: "Settings", href: "/settings", icon: Settings },
+  const allNavItems = [
+    { name: "Dashboard",     href: "/",        icon: LayoutDashboard, roles: ["Admin","Manager","Agent"] },
+    { name: "Ticket Board",  href: "/tickets", icon: Ticket,          roles: ["Admin","Manager","Agent"] },
+    { name: "Asset Registry",href: "/assets",  icon: Monitor,         roles: ["Admin","Manager","Agent"] },
+    { name: "Audit Logs",    href: "/audit",   icon: ScrollText,      roles: ["Admin","Manager"] },
+    { name: "Settings",      href: "/settings",icon: Settings,        roles: ["Admin","Manager","Agent"] },
   ];
+
+  const navItems = allNavItems.filter(item => item.roles.includes(role));
+
 
   return (
     // CHANGED: Added shadow-sm to make it stand out from the gray canvas

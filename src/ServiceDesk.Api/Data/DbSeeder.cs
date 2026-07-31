@@ -49,24 +49,27 @@ public static class DbSeeder
         await EnsureUser(userManager, "jay@test.com",     "Agent",   OpsDeptId, "Jay Ops Agent");       // NEW
 
         // ── Assets ─────────────────────────────────────────────────────────────
-        if (!db.Assets.Any())
+        // Additive: only insert assets that don't already exist by name.
+        var existingAssetNames = db.Assets.Select(a => a.Name).ToHashSet();
+        var requiredAssets = new List<Asset>
         {
-            db.Assets.AddRange(
-                // IT assets
-                new Asset { Id = Guid.NewGuid(), Name = "ThinkPad T14",          Status = "Active",      DepartmentId = ItDeptId },
-                new Asset { Id = Guid.NewGuid(), Name = "Dell XPS 15",            Status = "Active",      DepartmentId = ItDeptId },
-                new Asset { Id = Guid.NewGuid(), Name = "MacBook Pro M3",         Status = "Active",      DepartmentId = ItDeptId },
-                new Asset { Id = Guid.NewGuid(), Name = "HP EliteDesk 800",       Status = "Maintenance", DepartmentId = ItDeptId },
-                // Operations assets
-                new Asset { Id = Guid.NewGuid(), Name = "Cisco Switch 2960",     Status = "Active",      DepartmentId = OpsDeptId },
-                new Asset { Id = Guid.NewGuid(), Name = "Server Rack B",          Status = "Active",      DepartmentId = OpsDeptId },
-                new Asset { Id = Guid.NewGuid(), Name = "Forklift Controller #3", Status = "Maintenance", DepartmentId = OpsDeptId },
-                // Field Support assets
-                new Asset { Id = Guid.NewGuid(), Name = "Field Tablet A",         Status = "Active",      DepartmentId = FieldSupportDeptId },
-                new Asset { Id = Guid.NewGuid(), Name = "Field Scanner X",        Status = "Maintenance", DepartmentId = FieldSupportDeptId }
-            );
+            new Asset { Id = Guid.NewGuid(), Name = "ThinkPad T14",          Status = "Active",      DepartmentId = ItDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "Dell XPS 15",            Status = "Active",      DepartmentId = ItDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "MacBook Pro M3",         Status = "Active",      DepartmentId = ItDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "HP EliteDesk 800",       Status = "Maintenance", DepartmentId = ItDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "Cisco Switch 2960",      Status = "Active",      DepartmentId = OpsDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "Server Rack B",          Status = "Active",      DepartmentId = OpsDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "Forklift Controller #3", Status = "Maintenance", DepartmentId = OpsDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "Field Tablet A",         Status = "Active",      DepartmentId = FieldSupportDeptId },
+            new Asset { Id = Guid.NewGuid(), Name = "Field Scanner X",        Status = "Maintenance", DepartmentId = FieldSupportDeptId },
+        };
+        var missingAssets = requiredAssets.Where(a => !existingAssetNames.Contains(a.Name)).ToList();
+        if (missingAssets.Any())
+        {
+            db.Assets.AddRange(missingAssets);
             await db.SaveChangesAsync();
         }
+
 
         // ── Tickets ────────────────────────────────────────────────────────────
         // We check for a specific ticket title rather than Any() so that re-deploys
@@ -144,7 +147,7 @@ public static class DbSeeder
                     VerifiedByUserId = sarahUser?.Id, VerifiedAt = now.AddHours(-12),
                     ResolutionNote = "Fan replaced and chassis cleaned. Noise eliminated. User confirmed satisfied.",
                     CreatedAt = now.AddDays(-5),
-                    SlaDeadline = now.AddDays(-5).AddHours(48), SlaBreached = false
+                    SlaDeadline = now.AddDays(-5).AddHours(48), SlaBreached = true  // resolved but over SLA
                 },
                 new Ticket
                 {
@@ -236,12 +239,72 @@ public static class DbSeeder
                     VerifiedByUserId = charlieUser?.Id, VerifiedAt = now.AddDays(-10).AddHours(3),
                     ResolutionNote = "10m Cat6 cable replaced. Packet loss dropped to 0%. Closed after 48h clean monitoring.",
                     CreatedAt = now.AddDays(-12),
-                    SlaDeadline = now.AddDays(-12).AddHours(24), SlaBreached = false
+                    SlaDeadline = now.AddDays(-12).AddHours(24), SlaBreached = true  // closed but over SLA deadline
                 }
             };
 
             db.Tickets.AddRange(tickets);
             await db.SaveChangesAsync();
+
+            // ── Seed Audit Log entries for the resolved/closed tickets ────────
+            // These simulate the state transition history that would normally be
+            // written by AppDbContext.SaveChangesAsync when real users interact.
+            if (!db.AuditLogs.Any())
+            {
+                var resolvedTickets = db.Tickets
+                    .Where(t => t.Status == "Resolved" || t.Status == "Closed")
+                    .ToList();
+
+                var auditLogs = new List<AuditLog>();
+                foreach (var ticket in resolvedTickets)
+                {
+                    // 1. Created (Open)
+                    auditLogs.Add(new AuditLog
+                    {
+                        EntityName = "Ticket", EntityId = ticket.Id.ToString(),
+                        Action = "Added",
+                        ChangedByUserId = ticket.AssignedToUserId ?? aliceUser?.Id,
+                        Timestamp = ticket.CreatedAt,
+                        OldValues = null,
+                        NewValues = $"{{\"Status\":\"Open\",\"Title\":\"{ticket.Title}\",\"Priority\":\"{ticket.Priority}\"}}"
+                    });
+                    // 2. Assigned → InProgress
+                    if (ticket.AssignedToUserId != null)
+                        auditLogs.Add(new AuditLog
+                        {
+                            EntityName = "Ticket", EntityId = ticket.Id.ToString(),
+                            Action = "Modified",
+                            ChangedByUserId = ticket.AssignedToUserId,
+                            Timestamp = ticket.CreatedAt.AddHours(1),
+                            OldValues = "{\"Status\":\"Open\"}",
+                            NewValues = "{\"Status\":\"InProgress\"}"
+                        });
+                    // 3. Claimed → PendingVerification
+                    if (ticket.ClaimedByUserId != null && ticket.ClaimedAt.HasValue)
+                        auditLogs.Add(new AuditLog
+                        {
+                            EntityName = "Ticket", EntityId = ticket.Id.ToString(),
+                            Action = "Modified",
+                            ChangedByUserId = ticket.ClaimedByUserId,
+                            Timestamp = ticket.ClaimedAt.Value,
+                            OldValues = "{\"Status\":\"InProgress\"}",
+                            NewValues = "{\"Status\":\"PendingVerification\"}"
+                        });
+                    // 4. Verified → Resolved/Closed
+                    if (ticket.VerifiedByUserId != null && ticket.VerifiedAt.HasValue)
+                        auditLogs.Add(new AuditLog
+                        {
+                            EntityName = "Ticket", EntityId = ticket.Id.ToString(),
+                            Action = "Modified",
+                            ChangedByUserId = ticket.VerifiedByUserId,
+                            Timestamp = ticket.VerifiedAt.Value,
+                            OldValues = "{\"Status\":\"PendingVerification\"}",
+                            NewValues = $"{{\"Status\":\"{ticket.Status}\",\"ResolutionNote\":\"{ticket.ResolutionNote}\"}}"
+                        });
+                }
+                db.AuditLogs.AddRange(auditLogs);
+                await db.SaveChangesAsync();
+            }
         }
     }
 
