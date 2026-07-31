@@ -47,7 +47,6 @@ public class AuditLogsController : ControllerBase
     /// Limit defaults to 50; max is 200.
     /// </summary>
     [HttpGet("recent")]
-    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(IEnumerable<AuditLogResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRecent([FromQuery] int limit = 50)
     {
