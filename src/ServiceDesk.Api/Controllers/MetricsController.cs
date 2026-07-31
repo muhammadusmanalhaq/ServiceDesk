@@ -9,7 +9,7 @@ namespace ServiceDesk.Api.Controllers;
 [ApiController]
 [Route("api/metrics")]
 [Produces("application/json")]
-[Authorize]
+[Authorize(Roles = "Admin,Manager")]
 public class MetricsController : ControllerBase
 {
     private readonly AppDbContext _db;

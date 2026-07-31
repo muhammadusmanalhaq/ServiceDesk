@@ -152,7 +152,30 @@ public class TicketsController : ControllerBase
         // Check if resolved before deadline
         if (request.Status == "Resolved" || request.Status == "Closed")
         {
-            ticket.SlaBreached = DateTime.UtcNow > ticket.SlaDeadline;
+            var auditLogs = await _db.AuditLogs
+                .Where(a => a.EntityName == "Ticket" && a.EntityId == ticket.Id.ToString())
+                .ToListAsync();
+
+            bool hasBeenResolvedBefore = auditLogs.Any(a => 
+            {
+                if (string.IsNullOrEmpty(a.NewValues)) return false;
+                try
+                {
+                    var doc = System.Text.Json.JsonDocument.Parse(a.NewValues);
+                    if (doc.RootElement.TryGetProperty("Status", out var statusProp))
+                    {
+                        var status = statusProp.GetString();
+                        return status == "Resolved" || status == "Closed";
+                    }
+                }
+                catch { }
+                return false;
+            });
+
+            if (!hasBeenResolvedBefore)
+            {
+                ticket.SlaBreached = DateTime.UtcNow > ticket.SlaDeadline;
+            }
         }
 
         await _db.SaveChangesAsync();
@@ -383,7 +406,31 @@ public class TicketsController : ControllerBase
         {
             ticket.Status = "Resolved";
             ticket.ResolutionNote = request.ResolutionNote ?? ticket.ResolutionNote;
-            ticket.SlaBreached = DateTime.UtcNow > ticket.SlaDeadline;
+            
+            var auditLogs = await _db.AuditLogs
+                .Where(a => a.EntityName == "Ticket" && a.EntityId == ticket.Id.ToString())
+                .ToListAsync();
+
+            bool hasBeenResolvedBefore = auditLogs.Any(a => 
+            {
+                if (string.IsNullOrEmpty(a.NewValues)) return false;
+                try
+                {
+                    var doc = System.Text.Json.JsonDocument.Parse(a.NewValues);
+                    if (doc.RootElement.TryGetProperty("Status", out var statusProp))
+                    {
+                        var status = statusProp.GetString();
+                        return status == "Resolved" || status == "Closed";
+                    }
+                }
+                catch { }
+                return false;
+            });
+
+            if (!hasBeenResolvedBefore)
+            {
+                ticket.SlaBreached = DateTime.UtcNow > ticket.SlaDeadline;
+            }
 
             // Asset status rule: only flip to Active if this was the LAST open ticket on the asset.
             // "Open" here means not Resolved or Closed — PendingVerification still counts as open.
