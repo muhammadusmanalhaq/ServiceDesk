@@ -59,7 +59,34 @@ public class SlaCheckJob
             now, breachedTickets.Count);
 
         foreach (var ticket in breachedTickets)
+        {
+            var auditLogs = await db.AuditLogs
+                .Where(a => a.EntityName == "Ticket" && a.EntityId == ticket.Id.ToString())
+                .ToListAsync();
+
+            bool hasBeenResolvedBefore = auditLogs.Any(a => 
+            {
+                if (string.IsNullOrEmpty(a.NewValues)) return false;
+                try
+                {
+                    var doc = System.Text.Json.JsonDocument.Parse(a.NewValues);
+                    if (doc.RootElement.TryGetProperty("Status", out var statusProp))
+                    {
+                        var status = statusProp.GetString();
+                        return status == "Resolved" || status == "Closed";
+                    }
+                }
+                catch { }
+                return false;
+            });
+
+            if (hasBeenResolvedBefore)
+            {
+                continue;
+            }
+
             ticket.SlaBreached = true;
+        }
 
         // SaveChangesAsync override in AppDbContext automatically writes
         // one AuditLog row per breached ticket — we don't call it manually.
