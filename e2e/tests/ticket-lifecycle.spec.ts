@@ -11,8 +11,8 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   await page.fill('input[type="password"]', 'Password123!');
   await page.click('button[type="submit"]');
 
-  // Verify dashboard loaded
-  await expect(page.locator('text=Dashboard').first()).toBeVisible();
+  // Verify ticket board loaded (Bob is an Agent, so he redirects to /tickets instead of /)
+  await expect(page.locator('text=Ticket Board').first()).toBeVisible();
 
   // 2. Go to Tickets and Create
   await page.click('nav a:has-text("Ticket Board")');

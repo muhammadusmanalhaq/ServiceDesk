@@ -20,7 +20,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       { name: "Ticket Board",  href: "/tickets", icon: Ticket,          roles: ["Admin","Manager","Agent"] },
       { name: "Asset Registry",href: "/assets",  icon: Monitor,         roles: ["Admin","Manager","Agent"] },
       { name: "Audit Logs",    href: "/audit",   icon: ScrollText,      roles: ["Admin","Manager"] },
-      { name: "Settings",      href: "/settings",icon: Settings,        roles: ["Admin","Manager"] },
+      { name: "Settings",      href: "/settings",icon: Settings,        roles: ["Admin","Manager","Agent"] },
     ];
 
   const navItems = allNavItems.filter(item => item.roles.includes(role));
