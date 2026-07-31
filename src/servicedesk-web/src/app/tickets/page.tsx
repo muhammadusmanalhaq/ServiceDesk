@@ -278,7 +278,7 @@ export default function TicketsPage() {
                 const matchesAssignee = assigneeFilter === "All" 
                   ? true 
                   : (assigneeFilter === "Unassigned" ? !t.assignedToUserId : t.assignedToUserId === assigneeFilter);
-                const matchesMyTickets = !myTicketsOnly || t.assignedToUserId === user?.id;
+                const matchesMyTickets = !myTicketsOnly || t.assignedToUserId === user?.userId;
 
                 return matchesSearch && matchesDept && matchesPriority && matchesAssignee && matchesMyTickets && t.status === column.id;
               });
