@@ -246,65 +246,69 @@ public static class DbSeeder
             db.Tickets.AddRange(tickets);
             await db.SaveChangesAsync();
 
-            // ── Seed Audit Log entries for the resolved/closed tickets ────────
-            // These simulate the state transition history that would normally be
-            // written by AppDbContext.SaveChangesAsync when real users interact.
-            if (!db.AuditLogs.Any())
+            // ── Fix up the auto-generated 'Added' audit logs ────────
+            // AppDbContext intercepts db.Tickets.AddRange and automatically generates 'Added'
+            // logs. However, it uses DateTime.UtcNow. We want them to match ticket.CreatedAt.
+            var autoLogs = db.AuditLogs.Where(a => a.Action == "Added" && a.EntityName == "Ticket").ToList();
+            foreach (var log in autoLogs)
             {
-                var resolvedTickets = db.Tickets
-                    .Where(t => t.Status == "Resolved" || t.Status == "Closed")
-                    .ToList();
-
-                var auditLogs = new List<AuditLog>();
-                foreach (var ticket in resolvedTickets)
+                var t = tickets.FirstOrDefault(x => x.Id.ToString() == log.EntityId);
+                if (t != null)
                 {
-                    // 1. Created (Open)
+                    log.Timestamp = t.CreatedAt;
+                    log.ChangedByUserId = t.AssignedToUserId ?? aliceUser?.Id;
+                }
+            }
+
+            // ── Seed 'Modified' Audit Log entries for ALL tickets ────────
+            // These simulate the state transition history.
+            var auditLogs = new List<AuditLog>();
+            foreach (var ticket in tickets)
+            {
+                // 2. Assigned → InProgress
+                if (ticket.AssignedToUserId != null && ticket.Status != "Open")
+                {
                     auditLogs.Add(new AuditLog
                     {
                         EntityName = "Ticket", EntityId = ticket.Id.ToString(),
-                        Action = "Added",
-                        ChangedByUserId = ticket.AssignedToUserId ?? aliceUser?.Id,
-                        Timestamp = ticket.CreatedAt,
-                        OldValues = null,
-                        NewValues = $"{{\"Status\":\"Open\",\"Title\":\"{ticket.Title}\",\"Priority\":\"{ticket.Priority}\"}}"
+                        Action = "Modified",
+                        ChangedByUserId = ticket.AssignedToUserId,
+                        Timestamp = ticket.CreatedAt.AddHours(1),
+                        OldValues = "{\"Status\":\"Open\"}",
+                        NewValues = "{\"Status\":\"InProgress\"}"
                     });
-                    // 2. Assigned → InProgress
-                    if (ticket.AssignedToUserId != null)
-                        auditLogs.Add(new AuditLog
-                        {
-                            EntityName = "Ticket", EntityId = ticket.Id.ToString(),
-                            Action = "Modified",
-                            ChangedByUserId = ticket.AssignedToUserId,
-                            Timestamp = ticket.CreatedAt.AddHours(1),
-                            OldValues = "{\"Status\":\"Open\"}",
-                            NewValues = "{\"Status\":\"InProgress\"}"
-                        });
-                    // 3. Claimed → PendingVerification
-                    if (ticket.ClaimedByUserId != null && ticket.ClaimedAt.HasValue)
-                        auditLogs.Add(new AuditLog
-                        {
-                            EntityName = "Ticket", EntityId = ticket.Id.ToString(),
-                            Action = "Modified",
-                            ChangedByUserId = ticket.ClaimedByUserId,
-                            Timestamp = ticket.ClaimedAt.Value,
-                            OldValues = "{\"Status\":\"InProgress\"}",
-                            NewValues = "{\"Status\":\"PendingVerification\"}"
-                        });
-                    // 4. Verified → Resolved/Closed
-                    if (ticket.VerifiedByUserId != null && ticket.VerifiedAt.HasValue)
-                        auditLogs.Add(new AuditLog
-                        {
-                            EntityName = "Ticket", EntityId = ticket.Id.ToString(),
-                            Action = "Modified",
-                            ChangedByUserId = ticket.VerifiedByUserId,
-                            Timestamp = ticket.VerifiedAt.Value,
-                            OldValues = "{\"Status\":\"PendingVerification\"}",
-                            NewValues = $"{{\"Status\":\"{ticket.Status}\",\"ResolutionNote\":\"{ticket.ResolutionNote}\"}}"
-                        });
                 }
-                db.AuditLogs.AddRange(auditLogs);
-                await db.SaveChangesAsync();
+
+                // 3. Claimed → PendingVerification
+                if (ticket.ClaimedByUserId != null && ticket.ClaimedAt.HasValue && (ticket.Status == "PendingVerification" || ticket.Status == "Resolved" || ticket.Status == "Closed"))
+                {
+                    auditLogs.Add(new AuditLog
+                    {
+                        EntityName = "Ticket", EntityId = ticket.Id.ToString(),
+                        Action = "Modified",
+                        ChangedByUserId = ticket.ClaimedByUserId,
+                        Timestamp = ticket.ClaimedAt.Value,
+                        OldValues = "{\"Status\":\"InProgress\"}",
+                        NewValues = "{\"Status\":\"PendingVerification\"}"
+                    });
+                }
+
+                // 4. Verified → Resolved/Closed
+                if (ticket.VerifiedByUserId != null && ticket.VerifiedAt.HasValue && (ticket.Status == "Resolved" || ticket.Status == "Closed"))
+                {
+                    auditLogs.Add(new AuditLog
+                    {
+                        EntityName = "Ticket", EntityId = ticket.Id.ToString(),
+                        Action = "Modified",
+                        ChangedByUserId = ticket.VerifiedByUserId,
+                        Timestamp = ticket.VerifiedAt.Value,
+                        OldValues = "{\"Status\":\"PendingVerification\"}",
+                        NewValues = $"{{\"Status\":\"{ticket.Status}\",\"ResolutionNote\":\"{ticket.ResolutionNote}\"}}"
+                    });
+                }
             }
+            db.AuditLogs.AddRange(auditLogs);
+            await db.SaveChangesAsync();
         }
     }
 
