@@ -10,6 +10,7 @@ import { STATUS_COLORS, TicketStatus } from "@/constants/colors";
 import { SlaCountdownBadge } from "@/components/SlaCountdownBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/AuthContext";
 
 type TicketResponse = components["schemas"]["TicketResponse"];
 type AssetResponse = components["schemas"]["AssetResponse"];
@@ -20,7 +21,14 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  const { user } = useAuth();
+  
   useEffect(() => {
+    if (user && user.role === "Agent") {
+      router.push("/tickets");
+      return;
+    }
+
     async function loadData() {
       try {
         const [ticketsRes, metricsRes] = await Promise.all([
@@ -37,7 +45,7 @@ export default function Dashboard() {
       }
     }
     loadData();
-  }, []);
+  }, [user, router]);
 
   if (isLoading) {
     return (

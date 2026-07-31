@@ -15,13 +15,13 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const { user } = useAuth();
   const role = user?.role ?? "Agent";
 
-  const allNavItems = [
-    { name: "Dashboard",     href: "/",        icon: LayoutDashboard, roles: ["Admin","Manager","Agent"] },
-    { name: "Ticket Board",  href: "/tickets", icon: Ticket,          roles: ["Admin","Manager","Agent"] },
-    { name: "Asset Registry",href: "/assets",  icon: Monitor,         roles: ["Admin","Manager","Agent"] },
-    { name: "Audit Logs",    href: "/audit",   icon: ScrollText,      roles: ["Admin","Manager"] },
-    { name: "Settings",      href: "/settings",icon: Settings,        roles: ["Admin","Manager","Agent"] },
-  ];
+    const allNavItems = [
+      { name: "Dashboard",     href: "/",        icon: LayoutDashboard, roles: ["Admin","Manager"] },
+      { name: "Ticket Board",  href: "/tickets", icon: Ticket,          roles: ["Admin","Manager","Agent"] },
+      { name: "Asset Registry",href: "/assets",  icon: Monitor,         roles: ["Admin","Manager","Agent"] },
+      { name: "Audit Logs",    href: "/audit",   icon: ScrollText,      roles: ["Admin","Manager"] },
+      { name: "Settings",      href: "/settings",icon: Settings,        roles: ["Admin","Manager"] },
+    ];
 
   const navItems = allNavItems.filter(item => item.roles.includes(role));
 
