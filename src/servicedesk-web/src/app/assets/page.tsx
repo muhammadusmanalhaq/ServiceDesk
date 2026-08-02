@@ -207,7 +207,7 @@ export default function AssetsPage() {
                   <TableRow 
                     key={asset.id} 
                     className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/assets/${asset.id}`)}
+                    onClick={() => router.push(`/assets/details?id=${asset.id}`)}
                   >
                     <TableCell className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
                       {asset.id?.split("-")[0]}

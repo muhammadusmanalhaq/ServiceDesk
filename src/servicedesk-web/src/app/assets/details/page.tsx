@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, ArrowLeft, Monitor, Package, Ticket } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
@@ -21,8 +21,9 @@ import {
 type AssetResponse = components["schemas"]["AssetResponse"];
 type TicketResponse = components["schemas"]["TicketResponse"];
 
-export default function AssetDetailsPage() {
-  const { id } = useParams() as { id: string };
+function AssetDetailsContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") || "";
   const router = useRouter();
 
   const [asset, setAsset] = useState<AssetResponse | null>(null);
@@ -207,5 +208,13 @@ export default function AssetDetailsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AssetDetailsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-teal-600" /></div>}>
+      <AssetDetailsContent />
+    </Suspense>
   );
 }
