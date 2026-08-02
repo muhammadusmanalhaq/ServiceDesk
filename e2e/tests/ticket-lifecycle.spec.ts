@@ -53,7 +53,7 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   // Since we replaced dropdowns with native elements, find the avatar or Settings to logout.
   // Actually, there is a Settings link.
   await page.click('nav a:has-text("Settings")');
-  await page.click('button:has-text("Sign Out")');
+  await page.click('button:has-text("Sign Out")', { force: true });
   
   await page.waitForURL('**/login');
   await page.fill('input[type="email"]', 'alice@test.com');
