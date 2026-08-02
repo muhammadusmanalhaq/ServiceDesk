@@ -12,11 +12,11 @@ namespace ServiceDesk.Api.Controllers;
 [Produces("application/json")]
 public class AuditLogsController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly SystemDbContextFactory _dbFactory;
 
-    public AuditLogsController(AppDbContext db)
+    public AuditLogsController(SystemDbContextFactory dbFactory)
     {
-        _db = db;
+        _dbFactory = dbFactory;
     }
 
     /// <summary>
@@ -27,6 +27,8 @@ public class AuditLogsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<AuditLogResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetEntityHistory(string entityName, Guid entityId)
     {
+        using var _db = _dbFactory.CreateSystemContext();
+
         var logs = await (from a in _db.AuditLogs
                           where a.EntityName == entityName && a.EntityId == entityId.ToString()
                           join u in _db.Users on a.ChangedByUserId equals u.Id into userGroup
@@ -58,6 +60,7 @@ public class AuditLogsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<AuditLogResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRecent([FromQuery] int limit = 50)
     {
+        using var _db = _dbFactory.CreateSystemContext();
         limit = Math.Clamp(limit, 1, 200);
 
         var logs = await (from a in _db.AuditLogs
