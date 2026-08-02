@@ -75,15 +75,19 @@ public class AuditLogsController : ControllerBase
                             .Distinct()
                             .ToList();
 
-        var ticketNumbers = await _db.Tickets
+        var ticketNumbersData = await _db.Tickets
             .Where(t => ticketIds.Contains(t.Id))
-            .ToDictionaryAsync(t => t.Id.ToString(), t => t.TicketNumber);
+            .Select(t => new { t.Id, t.TicketNumber })
+            .ToListAsync();
+            
+        var ticketNumbers = ticketNumbersData
+            .ToDictionary(t => t.Id.ToString(), t => t.TicketNumber, StringComparer.OrdinalIgnoreCase);
 
         var responses = logs.Select(x => new AuditLogResponse(
             x.a.Id, x.a.EntityName, x.a.EntityId, x.a.Action,
             x.a.ChangedByUserId, x.UserName,
             x.a.Timestamp, x.a.OldValues, x.a.NewValues,
-            x.a.EntityName == "Ticket" && ticketNumbers.TryGetValue(x.a.EntityId, out var tn) ? tn : null
+            x.a.EntityName == "Ticket" && x.a.EntityId != null && ticketNumbers.TryGetValue(x.a.EntityId, out var tn) ? tn : null
         ));
 
         return Ok(responses);
