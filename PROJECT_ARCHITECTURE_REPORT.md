@@ -125,7 +125,7 @@ For background jobs (like the Hangfire SLA checker) and system-wide Audit Logs, 
 
 ### 6.1 The Static Export Decision
 During the project, we encountered a critical **Vercel 404 NOT_FOUND Error**. The Next.js build succeeded, but the live URLs returned 404s.
-- **The Problem:** Vercel's proprietary Edge Serverless Router occasionally fails to correctly map route manifests for Next.js 14+ App Router projects when specific combinations of `next.config.ts` and client/server components are used, resulting in an empty deployment map.
+- **The Problem:** Vercel's proprietary Edge Serverless Router occasionally fails to correctly map route manifests for Next.js 16.2.11+ App Router projects when specific combinations of `next.config.ts` and client/server components are used, resulting in an empty deployment map.
 - **The Solution & Rationale:** I explicitly forced Next.js into a **Static HTML Export** mode by adding `output: 'export'` to `next.config.mjs`. 
 - **Why this was the best choice:** Since our Next.js frontend contains no backend API routes (all data comes from the C# Azure backend) and no Server-Side Rendering requirements, we didn't *need* Vercel's Node.js edge functions. By exporting as static HTML, Vercel treats the project as a dumb static site, completely bypassing the bugged Edge Router. This also resulted in significantly faster TTFB (Time To First Byte) and zero cold-start times for the frontend UI.
 
