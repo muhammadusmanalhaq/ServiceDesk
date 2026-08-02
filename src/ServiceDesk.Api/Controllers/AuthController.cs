@@ -220,12 +220,21 @@ public class AuthController : ControllerBase
 
     private void SetRefreshTokenCookie(string rawRefreshToken)
     {
+        // In Development (plain HTTP localhost) use SameSite=Lax so the cookie
+        // is sent on same-site requests without requiring HTTPS.
+        // In all other environments (staging, production) the frontend (*.vercel.app)
+        // and backend (*.azurecontainerapps.io) are on different registrable domains,
+        // so SameSite=None is required. SameSite=None mandates Secure=true per spec.
+        var isDev = HttpContext.RequestServices
+            .GetRequiredService<IWebHostEnvironment>()
+            .IsDevelopment();
+
         Response.Cookies.Append("refreshToken", rawRefreshToken, new CookieOptions
         {
-            HttpOnly = true,                  // JS cannot read this
-            Secure = false,                   // Set to true in production (requires HTTPS)
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddDays(7)
+            HttpOnly = true,
+            Secure   = !isDev,
+            SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
+            Expires  = DateTimeOffset.UtcNow.AddDays(7)
         });
     }
 
