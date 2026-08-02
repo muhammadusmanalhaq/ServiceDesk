@@ -10,9 +10,9 @@ ServiceDesk is a full-stack, enterprise-grade ticketing and IT service managemen
 - **JWT Authentication**: Secure login with robust refresh token rotation.
 - **Real-Time Updates**: Live ticket status changes broadcasted instantly via SignalR.
 - **SLA Tracking**: Background jobs with automated email alerts for SLA breaches.
-- **File Attachments**: Secure document uploads via Azure Blob Storage SAS tokens.
-- **Audit Trail**: Complete, immutable history with field-level diffs for every ticket.
-- **End-to-End Test Coverage**: CI-tested exhaustive UI suites including a dedicated cross-tenant security test.
+- **File Attachments & Avatars**: Secure document and drag-and-drop profile picture uploads using Azure Blob Storage and SAS tokens.
+- **Audit Trail**: Complete, immutable history with field-level diffs for every ticket, dynamically resolving references across RLS boundaries for authorized admins.
+- **End-to-End Test Coverage**: CI-tested exhaustive UI suites (Playwright) hardened against UI flakiness (e.g., overlapping toasts) and including dedicated cross-tenant security tests.
 - **Containerized & Infrastructure-as-Code (IaC)**: Backend containerized via Docker and deployed using Bicep templates for repeatable, declarative cloud infrastructure.
 
 ## 🏗 Architecture
