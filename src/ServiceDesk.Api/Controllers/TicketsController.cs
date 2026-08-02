@@ -78,6 +78,23 @@ public class TicketsController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("asset/{assetId:guid}")]
+    [ProducesResponseType(typeof(IEnumerable<TicketResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetByAssetId(Guid assetId)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        var tickets = await _db.Tickets
+            .Include(t => t.Attachments)
+            .AsNoTracking()
+            .Where(t => t.AssetId == assetId)
+            .ToListAsync();
+
+        await transaction.CommitAsync();
+
+        return Ok(tickets.Select(ToResponse));
+    }
+
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(TicketResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Search, Loader2, Monitor, Trash2, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
@@ -25,6 +25,7 @@ import { CreateAssetModal } from "@/components/CreateAssetModal";
 type AssetResponse = components["schemas"]["AssetResponse"];
 
 export default function AssetsPage() {
+  const router = useRouter();
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [departments, setDepartments] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -206,7 +207,7 @@ export default function AssetsPage() {
                   <TableRow 
                     key={asset.id} 
                     className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                    onClick={() => setSelectedAsset(asset)}
+                    onClick={() => router.push(`/assets/${asset.id}`)}
                   >
                     <TableCell className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
                       {asset.id?.split("-")[0]}
