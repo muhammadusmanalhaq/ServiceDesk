@@ -11,11 +11,11 @@ public interface INotificationService
     /// Notifies relevant parties that a ticket has breached its SLA deadline.
     /// Called by the SLA background job after marking SlaBreached = true.
     /// </summary>
-    Task SendBreachAlertAsync(Guid ticketId);
+    Task SendBreachAlertAsync(Guid ticketId, string? parentTraceId);
 
     /// <summary>
     /// Notifies the assigned agent when a ticket is assigned to them.
     /// Called from TicketsController.Assign.
     /// </summary>
-    Task SendAssignmentAlertAsync(Guid ticketId, string assignedToUserId);
+    Task SendAssignmentAlertAsync(Guid ticketId, string assignedToUserId, string? parentTraceId);
 }

@@ -262,7 +262,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 // schedule in Postgres, so it survives restarts.
 RecurringJob.AddOrUpdate<SlaCheckJob>(
     recurringJobId: "sla-breach-check",
-    methodCall: job => job.RunAsync(),
+    methodCall: job => job.RunAsync(null),
     cronExpression: Cron.MinuteInterval(5),
     options: new RecurringJobOptions
     {

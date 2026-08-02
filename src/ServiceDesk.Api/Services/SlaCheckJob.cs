@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using ServiceDesk.Api.Data;
@@ -17,6 +18,8 @@ namespace ServiceDesk.Api.Services;
 /// </summary>
 public class SlaCheckJob
 {
+    public static readonly ActivitySource ActivitySource = new("ServiceDesk.BackgroundJobs");
+
     private readonly SystemDbContextFactory _dbFactory;
     private readonly IBackgroundJobClient _jobClient;
     private readonly ILogger<SlaCheckJob> _logger;
@@ -31,8 +34,14 @@ public class SlaCheckJob
         _logger = logger;
     }
 
-    public async Task RunAsync()
+    public async Task RunAsync(string? parentTraceId)
     {
+        using var activity = parentTraceId != null 
+            ? ActivitySource.StartActivity("SlaCheckJob.RunAsync", ActivityKind.Internal, parentTraceId)
+            : ActivitySource.StartActivity("SlaCheckJob.RunAsync", ActivityKind.Internal);
+
+        var currentTraceId = Activity.Current?.Id ?? parentTraceId;
+
         await using var db = _dbFactory.CreateSystemContext();
 
         var now = DateTime.UtcNow;
@@ -97,7 +106,7 @@ public class SlaCheckJob
         foreach (var ticket in breachedTickets)
         {
             _jobClient.Enqueue<INotificationService>(
-                n => n.SendBreachAlertAsync(ticket.Id));
+                n => n.SendBreachAlertAsync(ticket.Id, currentTraceId));
         }
     }
 }

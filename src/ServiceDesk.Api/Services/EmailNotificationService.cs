@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Azure;
 using Azure.Communication.Email;
 using ServiceDesk.Api.Data;
@@ -33,8 +34,12 @@ public class EmailNotificationService : INotificationService
         _logger = logger;
     }
 
-    public async Task SendBreachAlertAsync(Guid ticketId)
+    public async Task SendBreachAlertAsync(Guid ticketId, string? parentTraceId)
     {
+        using var activity = parentTraceId != null 
+            ? SlaCheckJob.ActivitySource.StartActivity("EmailNotificationService.SendBreachAlert", ActivityKind.Internal, parentTraceId)
+            : SlaCheckJob.ActivitySource.StartActivity("EmailNotificationService.SendBreachAlert", ActivityKind.Internal);
+
         await using var db = _dbFactory.CreateSystemContext();
 
         var ticket = await db.Tickets.FindAsync(ticketId);
@@ -80,8 +85,12 @@ public class EmailNotificationService : INotificationService
         await SendEmailAsync(db, ticket.Id.ToString(), toAddress, subject, body);
     }
 
-    public async Task SendAssignmentAlertAsync(Guid ticketId, string assignedToUserId)
+    public async Task SendAssignmentAlertAsync(Guid ticketId, string assignedToUserId, string? parentTraceId)
     {
+        using var activity = parentTraceId != null 
+            ? SlaCheckJob.ActivitySource.StartActivity("EmailNotificationService.SendAssignmentAlert", ActivityKind.Internal, parentTraceId)
+            : SlaCheckJob.ActivitySource.StartActivity("EmailNotificationService.SendAssignmentAlert", ActivityKind.Internal);
+
         await using var db = _dbFactory.CreateSystemContext();
 
         var ticket = await db.Tickets.FindAsync(ticketId);
