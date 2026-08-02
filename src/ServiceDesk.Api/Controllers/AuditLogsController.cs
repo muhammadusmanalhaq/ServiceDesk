@@ -12,11 +12,11 @@ namespace ServiceDesk.Api.Controllers;
 [Produces("application/json")]
 public class AuditLogsController : ControllerBase
 {
-    private readonly SystemDbContextFactory _dbFactory;
+    private readonly AppDbContext _db;
 
-    public AuditLogsController(SystemDbContextFactory dbFactory)
+    public AuditLogsController(AppDbContext db)
     {
-        _dbFactory = dbFactory;
+        _db = db;
     }
 
     /// <summary>
@@ -27,7 +27,8 @@ public class AuditLogsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<AuditLogResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetEntityHistory(string entityName, Guid entityId)
     {
-        using var _db = _dbFactory.CreateSystemContext();
+        // Must start a transaction for READ queries to trigger RlsDbConnectionInterceptor
+        using var tx = await _db.Database.BeginTransactionAsync();
 
         var logs = await (from a in _db.AuditLogs
                           where a.EntityName == entityName && a.EntityId == entityId.ToString()
@@ -60,7 +61,9 @@ public class AuditLogsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<AuditLogResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRecent([FromQuery] int limit = 50)
     {
-        using var _db = _dbFactory.CreateSystemContext();
+        // Must start a transaction for READ queries to trigger RlsDbConnectionInterceptor
+        using var tx = await _db.Database.BeginTransactionAsync();
+
         limit = Math.Clamp(limit, 1, 200);
 
         var logs = await (from a in _db.AuditLogs
