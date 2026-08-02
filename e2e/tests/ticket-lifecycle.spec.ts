@@ -53,6 +53,7 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   // Since we replaced dropdowns with native elements, find the avatar or Settings to logout.
   // Actually, there is a Settings link.
   await page.click('nav a:has-text("Settings")');
+  await page.waitForSelector('button:has-text("Sign Out")');
   await page.evaluate(() => {
     const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent?.includes('Sign Out'));
     if (btn) (btn as HTMLElement).click();
