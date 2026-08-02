@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    // Allows production builds to successfully complete even if
-    // your project has type errors (e.g. strict openapi-fetch types).
-    ignoreBuildErrors: true,
-  },
   output: 'export',
 };
 

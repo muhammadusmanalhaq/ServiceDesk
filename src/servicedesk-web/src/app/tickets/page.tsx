@@ -52,7 +52,7 @@ export default function TicketsPage() {
       const [ticketsRes, deptsRes, usersRes] = await Promise.all([
         apiFetch.GET("/api/tickets"),
         apiFetch.GET("/api/departments"),
-        apiFetch.GET("/api/users" as any)
+        apiFetch.GET("/api/users" as any, {})
       ]);
       
       if (ticketsRes.data) setTickets(ticketsRes.data);

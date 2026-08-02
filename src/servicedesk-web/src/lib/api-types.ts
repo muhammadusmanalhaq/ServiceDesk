@@ -601,7 +601,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["DashboardMetricsResponse"];
+                    };
                 };
             };
         };
@@ -1328,6 +1330,12 @@ export interface components {
             assetId: string;
             priority: string;
         };
+        DashboardMetricsResponse: {
+            slaTrend?: components["schemas"]["SlaTrendPoint"][] | null;
+            deltas?: components["schemas"]["StatDeltas"];
+            /** Format: int32 */
+            totalActiveAssets?: number;
+        };
         DepartmentDto: {
             /** Format: uuid */
             id?: string;
@@ -1439,13 +1447,30 @@ export interface components {
             readonly temperatureF?: number;
             summary?: string | null;
         };
+        SlaTrendPoint: {
+            date?: string | null;
+            /** Format: int32 */
+            compliant?: number;
+            /** Format: int32 */
+            breached?: number;
+        };
+        StatDeltas: {
+            /** Format: double */
+            openTickets?: number;
+            /** Format: double */
+            activeAssets?: number;
+            /** Format: double */
+            slaCompliance?: number;
+            /** Format: double */
+            breachedTickets?: number;
+        };
     };
     responses: never;
     parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;
-}
+};
 export type $defs = Record<string, never>;
 export interface operations {
     GetWeatherForecast: {

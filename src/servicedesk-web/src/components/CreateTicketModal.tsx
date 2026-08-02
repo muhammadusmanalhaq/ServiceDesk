@@ -86,13 +86,14 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
       });
 
       if (res.error) {
-        if (res.error.errors && typeof res.error.errors === 'object') {
-          const validationErrors = Object.values(res.error.errors).flat().join(" | ");
+        const errData = res.error as any;
+        if (errData.errors && typeof errData.errors === 'object') {
+          const validationErrors = Object.values(errData.errors).flat().join(" | ");
           setError(`Validation Failed: ${validationErrors}`);
           toast.error(`Validation Failed: ${validationErrors}`);
         } else {
-          setError(res.error.title || res.error.message || "Failed to create ticket.");
-          toast.error(res.error.title || res.error.message || "Failed to create ticket.");
+          setError(errData.title || errData.message || "Failed to create ticket.");
+          toast.error(errData.title || errData.message || "Failed to create ticket.");
         }
       } else {
         toast.success("Ticket created successfully");

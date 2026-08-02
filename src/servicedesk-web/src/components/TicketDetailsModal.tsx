@@ -36,7 +36,7 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
       // For a unified thread, we'd fetch comments and audit logs and merge them
       const [commentsRes, auditRes] = await Promise.all([
         apiFetch.GET("/api/tickets/{id}/comments", { params: { path: { id: ticket.id } } }),
-        apiFetch.GET("/api/audit", { params: { query: { entityId: ticket.id } } })
+        apiFetch.GET("/api/audit-logs/{entityName}/{entityId}", { params: { path: { entityName: "Ticket", entityId: ticket.id } } })
       ]);
       
       const thread: any[] = [];
@@ -44,7 +44,7 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
         commentsRes.data.forEach((c: any) => thread.push({ ...c, type: 'comment', timestamp: new Date(c.createdAt).getTime() }));
       }
       if (auditRes.data) {
-        auditRes.data.forEach((a: any) => thread.push({ ...a, type: 'audit', timestamp: new Date(a.createdAt).getTime() }));
+        auditRes.data.forEach((a: any) => thread.push({ ...a, type: 'audit', timestamp: new Date(a.timestamp).getTime() }));
       }
       
       thread.sort((a, b) => a.timestamp - b.timestamp);
