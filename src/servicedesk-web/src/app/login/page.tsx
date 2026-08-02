@@ -63,8 +63,8 @@ function LoginForm() {
         <h1 className="text-3xl font-bold tracking-tight text-center text-zinc-900 dark:text-white">
           ServiceDesk
         </h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-center text-sm">
-          Enter your credentials to access your workspace
+        <p className="text-zinc-500 dark:text-zinc-400 text-center text-sm px-4 leading-relaxed">
+          Enterprise IT ticketing and asset management with department-level data isolation
         </p>
       </div>
 

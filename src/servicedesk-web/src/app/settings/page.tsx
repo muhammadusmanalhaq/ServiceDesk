@@ -8,7 +8,7 @@ import { User, Palette, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, login, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -21,7 +21,7 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true);
     if (user) {
-      setFullName(user.fullName);
+      setFullName(user.fullName || "");
       setAvatarUrl((user as any).avatarUrl || "");
     }
   }, [user]);

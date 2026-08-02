@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,6 +16,7 @@ using ServiceDesk.Api.Hubs;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using ServiceDesk.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +36,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, opt) =>
 {
     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+    var rlsLogger = serviceProvider.GetRequiredService<ILogger<RlsTransactionInterceptor>>();
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
-       .AddInterceptors(new RlsTransactionInterceptor(httpContextAccessor));
+       .AddInterceptors(new RlsTransactionInterceptor(httpContextAccessor, rlsLogger));
 });
 
 // System context factory — used ONLY by background jobs and the AuditLogsController.
@@ -128,7 +132,16 @@ builder.Services.AddHangfireServer(opt =>
 
 // ─── Controllers + Swagger + SignalR + Validation ──────────────────────────
 builder.Services.AddMemoryCache();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        // Force every DateTime with Kind=Unspecified (returned by Npgsql from
+        // timestamp-without-timezone columns) to serialize as UTC (trailing Z).
+        // This fixes the SLA countdown timezone bug where the frontend parsed
+        // an unzoned string as local time instead of UTC.
+        opts.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+        opts.JsonSerializerOptions.Converters.Add(new UtcNullableDateTimeConverter());
+    });
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddSignalR();
@@ -249,7 +262,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 // schedule in Postgres, so it survives restarts.
 RecurringJob.AddOrUpdate<SlaCheckJob>(
     recurringJobId: "sla-breach-check",
-    methodCall: job => job.RunAsync(),
+    methodCall: job => job.RunAsync(null),
     cronExpression: Cron.MinuteInterval(5),
     options: new RecurringJobOptions
     {
@@ -257,6 +270,14 @@ RecurringJob.AddOrUpdate<SlaCheckJob>(
     });
 
 app.MapControllers();
+
+// Test/debug endpoints are only registered in non-Production environments.
+// In Production, any request to /api/test/* returns 404.
+if (!app.Environment.IsProduction())
+{
+    app.MapControllerRoute("test-controller", "api/test/{action=Index}");
+}
+
 app.MapHub<TicketHub>("/hubs/tickets");
 
 // Health endpoint — needed by CI smoke test in Milestone 9

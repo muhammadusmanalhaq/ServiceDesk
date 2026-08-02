@@ -33,7 +33,7 @@ export default function Dashboard() {
       try {
         const [ticketsRes, metricsRes] = await Promise.all([
           apiFetch.GET("/api/tickets"),
-          apiFetch.GET("/api/metrics/dashboard" as any), // Type cast if api-types is stale
+          apiFetch.GET("/api/metrics/dashboard"),
         ]);
         
         if (ticketsRes.data) setTickets(ticketsRes.data);

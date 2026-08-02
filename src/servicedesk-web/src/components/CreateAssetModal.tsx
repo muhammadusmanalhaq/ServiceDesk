@@ -55,14 +55,16 @@ export function CreateAssetModal({ isOpen, onClose, onAssetCreated, departments 
         } as any
       });
 
-      if (res.error) {
-        if (res.error.errors && typeof res.error.errors === 'object') {
-          const validationErrors = Object.values(res.error.errors).flat().join(" | ");
+      const anyRes = res as any;
+      if (anyRes.error) {
+        const errData = anyRes.error;
+        if (errData.errors && typeof errData.errors === 'object') {
+          const validationErrors = Object.values(errData.errors).flat().join(" | ");
           setError(`Validation Failed: ${validationErrors}`);
           toast.error(`Validation Failed: ${validationErrors}`);
         } else {
-          setError(res.error.title || "Failed to create asset");
-          toast.error(res.error.title || "Failed to create asset");
+          setError(errData.title || "Failed to create asset");
+          toast.error(errData.title || "Failed to create asset");
         }
       } else {
         toast.success("Asset created successfully");

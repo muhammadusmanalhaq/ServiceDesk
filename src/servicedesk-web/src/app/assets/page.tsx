@@ -1,7 +1,8 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
-import { Plus, Search, Loader2, Monitor } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Search, Loader2, Monitor, Trash2, X, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
 import { formatDistanceToNow } from "date-fns";
@@ -24,6 +25,7 @@ import { CreateAssetModal } from "@/components/CreateAssetModal";
 type AssetResponse = components["schemas"]["AssetResponse"];
 
 export default function AssetsPage() {
+  const router = useRouter();
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [departments, setDepartments] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +34,29 @@ export default function AssetsPage() {
   const [deptFilter, setDeptFilter] = useState("All");
   const [selectedAsset, setSelectedAsset] = useState<AssetResponse | null>(null);
   const [isAddAssetModalOpen, setIsAddAssetModalOpen] = useState(false);
+  const [assetToRetire, setAssetToRetire] = useState<AssetResponse | null>(null);
+  const [isRetiring, setIsRetiring] = useState(false);
+
+  const handleRetireConfirm = async () => {
+    if (!assetToRetire) return;
+    setIsRetiring(true);
+    try {
+      const res = await apiFetch.DELETE("/api/assets/{id}", {
+        params: { path: { id: assetToRetire.id! } }
+      });
+      if (res.error) {
+        toast.error((res.error as any).title || "Failed to retire asset");
+      } else {
+        toast.success("Asset retired successfully");
+        fetchData();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred");
+    } finally {
+      setIsRetiring(false);
+      setAssetToRetire(null);
+    }
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -182,7 +207,7 @@ export default function AssetsPage() {
                   <TableRow 
                     key={asset.id} 
                     className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                    onClick={() => setSelectedAsset(asset)}
+                    onClick={() => router.push(`/assets/details?id=${asset.id}`)}
                   >
                     <TableCell className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
                       {asset.id?.split("-")[0]}
@@ -206,14 +231,25 @@ export default function AssetsPage() {
                       {formatDistanceToNow(new Date(Date.now() - (asset.id!.charCodeAt(0) * 10000000)), { addSuffix: true })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        onClick={(e) => { e.stopPropagation(); setSelectedAsset(asset); }}
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-teal-700 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      >
-                        Edit
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button 
+                          onClick={(e) => { e.stopPropagation(); setAssetToRetire(asset); }}
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/50 h-8 w-8 p-0"
+                          title="Retire Asset"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          onClick={(e) => { e.stopPropagation(); setSelectedAsset(asset); }}
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-teal-700 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                          Edit
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -222,6 +258,31 @@ export default function AssetsPage() {
           </Table>
         </div>
       </div>
+
+      {assetToRetire && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 w-screen h-screen">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden relative">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-red-100 dark:bg-red-500/20 p-3 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Retire Asset?</h3>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">This action will mark <span className="font-semibold text-zinc-700 dark:text-zinc-300">{assetToRetire.name}</span> as retired.</p>
+                </div>
+              </div>
+              <div className="flex gap-3 w-full pt-4 border-t border-zinc-200 dark:border-zinc-800 mt-4">
+                <Button type="button" variant="ghost" onClick={() => setAssetToRetire(null)} className="flex-1 text-zinc-600 dark:text-zinc-400">Cancel</Button>
+                <Button type="button" variant="destructive" onClick={handleRetireConfirm} disabled={isRetiring} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
+                  {isRetiring ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Confirm Retire
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

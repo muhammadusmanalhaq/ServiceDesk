@@ -601,7 +601,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["DashboardMetricsResponse"];
+                    };
                 };
             };
         };
@@ -854,6 +856,43 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/asset/{assetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TicketResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1299,6 +1338,7 @@ export interface components {
             timestamp?: string;
             oldValues?: string | null;
             newValues?: string | null;
+            ticketNumber?: string | null;
         };
         AuthResponse: {
             accessToken?: string | null;
@@ -1327,6 +1367,12 @@ export interface components {
             /** Format: uuid */
             assetId: string;
             priority: string;
+        };
+        DashboardMetricsResponse: {
+            slaTrend?: components["schemas"]["SlaTrendPoint"][] | null;
+            deltas?: components["schemas"]["StatDeltas"];
+            /** Format: int32 */
+            totalActiveAssets?: number;
         };
         DepartmentDto: {
             /** Format: uuid */
@@ -1439,13 +1485,30 @@ export interface components {
             readonly temperatureF?: number;
             summary?: string | null;
         };
+        SlaTrendPoint: {
+            date?: string | null;
+            /** Format: int32 */
+            compliant?: number;
+            /** Format: int32 */
+            breached?: number;
+        };
+        StatDeltas: {
+            /** Format: double */
+            openTickets?: number;
+            /** Format: double */
+            activeAssets?: number;
+            /** Format: double */
+            slaCompliance?: number;
+            /** Format: double */
+            breachedTickets?: number;
+        };
     };
     responses: never;
     parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;
-}
+};
 export type $defs = Record<string, never>;
 export interface operations {
     GetWeatherForecast: {

@@ -8,7 +8,7 @@ public class TicketHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
-        var departmentId = Context.User?.FindFirst("DepartmentId")?.Value;
+        var departmentId = Context.User?.FindFirst("department_id")?.Value;
         if (!string.IsNullOrEmpty(departmentId))
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, departmentId);
@@ -19,7 +19,7 @@ public class TicketHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var departmentId = Context.User?.FindFirst("DepartmentId")?.Value;
+        var departmentId = Context.User?.FindFirst("department_id")?.Value;
         if (!string.IsNullOrEmpty(departmentId))
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, departmentId);

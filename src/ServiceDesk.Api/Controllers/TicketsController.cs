@@ -8,6 +8,8 @@ using ServiceDesk.Api.Data;
 using ServiceDesk.Api.DTOs.CoreDomain;
 using ServiceDesk.Api.Models;
 using ServiceDesk.Api.Hubs;
+using Hangfire;
+using ServiceDesk.Api.Services;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -20,12 +22,14 @@ public class TicketsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IMemoryCache _cache;
     private readonly IHubContext<TicketHub> _hub;
+    private readonly IBackgroundJobClient _jobClient;
 
-    public TicketsController(AppDbContext db, IMemoryCache cache, IHubContext<TicketHub> hub)
+    public TicketsController(AppDbContext db, IMemoryCache cache, IHubContext<TicketHub> hub, IBackgroundJobClient jobClient)
     {
         _db = db;
         _cache = cache;
         _hub = hub;
+        _jobClient = jobClient;
     }
 
     private Guid CurrentDepartmentId =>
@@ -72,6 +76,23 @@ public class TicketsController : ControllerBase
         _cache.Set(cacheKey, response, TimeSpan.FromSeconds(30));
         
         return Ok(response);
+    }
+
+    [HttpGet("asset/{assetId:guid}")]
+    [ProducesResponseType(typeof(IEnumerable<TicketResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetByAssetId(Guid assetId)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        var tickets = await _db.Tickets
+            .Include(t => t.Attachments)
+            .AsNoTracking()
+            .Where(t => t.AssetId == assetId)
+            .ToListAsync();
+
+        await transaction.CommitAsync();
+
+        return Ok(tickets.Select(ToResponse));
     }
 
     [HttpGet("{id:guid}")]
@@ -212,6 +233,9 @@ public class TicketsController : ControllerBase
 
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        var traceId = System.Diagnostics.Activity.Current?.Id;
+        _jobClient.Enqueue<INotificationService>(n => n.SendAssignmentAlertAsync(ticket.Id, request.UserId, traceId));
 
         _cache.Remove($"Tickets_{CurrentDepartmentId}");
 
