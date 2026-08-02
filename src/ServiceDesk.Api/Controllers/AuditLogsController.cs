@@ -32,14 +32,22 @@ public class AuditLogsController : ControllerBase
                           join u in _db.Users on a.ChangedByUserId equals u.Id into userGroup
                           from u in userGroup.DefaultIfEmpty()
                           orderby a.Timestamp descending
-                          select new AuditLogResponse(
-                              a.Id, a.EntityName, a.EntityId, a.Action,
-                              a.ChangedByUserId,
-                              u != null ? u.FullName : a.ChangedByUserId, 
-                              a.Timestamp, a.OldValues, a.NewValues))
+                          select new { a, UserName = u != null ? u.FullName : a.ChangedByUserId })
             .ToListAsync();
 
-        return Ok(logs);
+        string? ticketNumber = null;
+        if (entityName == "Ticket")
+        {
+            ticketNumber = await _db.Tickets.Where(t => t.Id == entityId).Select(t => t.TicketNumber).FirstOrDefaultAsync();
+        }
+
+        var responses = logs.Select(x => new AuditLogResponse(
+            x.a.Id, x.a.EntityName, x.a.EntityId, x.a.Action,
+            x.a.ChangedByUserId, x.UserName,
+            x.a.Timestamp, x.a.OldValues, x.a.NewValues, ticketNumber
+        ));
+
+        return Ok(responses);
     }
 
     /// <summary>
@@ -56,14 +64,28 @@ public class AuditLogsController : ControllerBase
                           join u in _db.Users on a.ChangedByUserId equals u.Id into userGroup
                           from u in userGroup.DefaultIfEmpty()
                           orderby a.Timestamp descending
-                          select new AuditLogResponse(
-                              a.Id, a.EntityName, a.EntityId, a.Action,
-                              a.ChangedByUserId,
-                              u != null ? u.FullName : a.ChangedByUserId, 
-                              a.Timestamp, a.OldValues, a.NewValues))
+                          select new { a, UserName = u != null ? u.FullName : a.ChangedByUserId })
             .Take(limit)
             .ToListAsync();
 
-        return Ok(logs);
+        var ticketIds = logs.Where(x => x.a.EntityName == "Ticket")
+                            .Select(x => Guid.TryParse(x.a.EntityId, out var g) ? (Guid?)g : null)
+                            .Where(g => g.HasValue)
+                            .Select(g => g.Value)
+                            .Distinct()
+                            .ToList();
+
+        var ticketNumbers = await _db.Tickets
+            .Where(t => ticketIds.Contains(t.Id))
+            .ToDictionaryAsync(t => t.Id.ToString(), t => t.TicketNumber);
+
+        var responses = logs.Select(x => new AuditLogResponse(
+            x.a.Id, x.a.EntityName, x.a.EntityId, x.a.Action,
+            x.a.ChangedByUserId, x.UserName,
+            x.a.Timestamp, x.a.OldValues, x.a.NewValues,
+            x.a.EntityName == "Ticket" && ticketNumbers.TryGetValue(x.a.EntityId, out var tn) ? tn : null
+        ));
+
+        return Ok(responses);
     }
 }

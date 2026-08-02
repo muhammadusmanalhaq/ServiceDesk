@@ -170,7 +170,12 @@ export default function AuditLogsPage() {
                       <div className="flex flex-col">
                         <span className="font-medium text-zinc-900 dark:text-zinc-100">{log.entityName}</span>
                         {log.entityName === "Ticket" ? (
-                          <a href={`/tickets?ticket=${log.entityId}`} className="text-xs font-mono text-teal-700 dark:text-teal-400 hover:underline">{log.entityId}</a>
+                          <div className="group flex flex-col">
+                            <a href={`/tickets?ticket=${log.entityId}`} className="text-sm font-semibold text-teal-700 dark:text-teal-400 hover:underline">
+                              #{log.ticketNumber || "UNKNOWN"}
+                            </a>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-600 font-mono opacity-0 group-hover:opacity-100 transition-opacity select-all" title="Copy UUID">{log.entityId}</span>
+                          </div>
                         ) : log.entityName === "Asset" ? (
                           <a href={`/assets?asset=${log.entityId}`} className="text-xs font-mono text-teal-700 dark:text-teal-400 hover:underline">{log.entityId}</a>
                         ) : (

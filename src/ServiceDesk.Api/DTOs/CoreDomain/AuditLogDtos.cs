@@ -10,5 +10,6 @@ public record AuditLogResponse(
     string? ChangedByName,
     DateTime Timestamp,
     string? OldValues,
-    string? NewValues
+    string? NewValues,
+    string? TicketNumber = null
 );

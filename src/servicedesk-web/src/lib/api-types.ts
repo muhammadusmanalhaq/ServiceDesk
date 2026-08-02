@@ -1301,6 +1301,7 @@ export interface components {
             timestamp?: string;
             oldValues?: string | null;
             newValues?: string | null;
+            ticketNumber?: string | null;
         };
         AuthResponse: {
             accessToken?: string | null;
