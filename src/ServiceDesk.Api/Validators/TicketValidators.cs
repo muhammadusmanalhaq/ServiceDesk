@@ -25,3 +25,46 @@ public class RegisterAttachmentRequestValidator : AbstractValidator<RegisterAtta
         RuleFor(x => x.FileName).NotEmpty().MaximumLength(255);
     }
 }
+
+public class UpdateTicketStatusRequestValidator : AbstractValidator<UpdateTicketStatusRequest>
+{
+    private static readonly string[] ValidStatuses =
+        ["Open", "InProgress", "PendingVerification", "Resolved", "Closed"];
+
+    public UpdateTicketStatusRequestValidator()
+    {
+        RuleFor(x => x.Status)
+            .NotEmpty()
+            .Must(s => ValidStatuses.Contains(s))
+            .WithMessage("Status must be one of: Open, InProgress, PendingVerification, Resolved, Closed.");
+    }
+}
+
+public class AssignTicketRequestValidator : AbstractValidator<AssignTicketRequest>
+{
+    public AssignTicketRequestValidator()
+    {
+        RuleFor(x => x.UserId).NotEmpty();
+    }
+}
+
+public class ClaimTicketRequestValidator : AbstractValidator<ClaimTicketRequest>
+{
+    public ClaimTicketRequestValidator()
+    {
+        RuleFor(x => x.ResolutionNote).MaximumLength(2000);
+    }
+}
+
+public class VerifyTicketRequestValidator : AbstractValidator<VerifyTicketRequest>
+{
+    public VerifyTicketRequestValidator()
+    {
+        // ResolutionNote is mandatory when rejecting (Accept = false)
+        RuleFor(x => x.ResolutionNote)
+            .NotEmpty()
+            .When(x => !x.Accept)
+            .WithMessage("ResolutionNote is required when rejecting a claim.");
+        RuleFor(x => x.ResolutionNote).MaximumLength(2000);
+    }
+}
