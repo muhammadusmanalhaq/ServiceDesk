@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, Monitor, Package, FileText, Ticket } from "lucide-react";
+import { Loader2, ArrowLeft, Monitor, Package, Ticket } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import { components } from "@/lib/api-types";
 import { formatDistanceToNow, format } from "date-fns";
@@ -143,30 +143,7 @@ export default function AssetDetailsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-zinc-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-900">
-              <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/50">
-                <CardTitle className="text-sm font-medium flex items-center text-zinc-900 dark:text-zinc-100">
-                  <FileText className="h-4 w-4 mr-2 text-teal-600 dark:text-teal-400" />
-                  Attachments
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                {asset.attachments && asset.attachments.length > 0 ? (
-                  <ul className="space-y-2">
-                    {asset.attachments.map(att => (
-                      <li key={att.id} className="text-sm">
-                        <a href={`/api/attachments/download/${att.id}`} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          <span className="truncate">{att.fileName}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-zinc-500 italic">No attachments</p>
-                )}
-              </CardContent>
-            </Card>
+
           </div>
 
           {/* Linked Tickets */}

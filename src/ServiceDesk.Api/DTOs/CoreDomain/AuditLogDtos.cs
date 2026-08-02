@@ -9,7 +9,7 @@ public record AuditLogResponse(
     string? ChangedByUserId,
     string? ChangedByName,
     DateTime Timestamp,
-    string? OldValues,
-    string? NewValues,
-    string? TicketNumber = null
+    string? OldValues = null,
+    string? NewValues = null,
+    int? TicketNumber = null
 );

@@ -35,7 +35,7 @@ public class AuditLogsController : ControllerBase
                           select new { a, UserName = u != null ? u.FullName : a.ChangedByUserId })
             .ToListAsync();
 
-        string? ticketNumber = null;
+        int? ticketNumber = null;
         if (entityName == "Ticket")
         {
             ticketNumber = await _db.Tickets.Where(t => t.Id == entityId).Select(t => t.TicketNumber).FirstOrDefaultAsync();
