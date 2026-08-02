@@ -33,8 +33,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, opt) =>
 {
     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+    var rlsLogger = serviceProvider.GetRequiredService<ILogger<RlsTransactionInterceptor>>();
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
-       .AddInterceptors(new RlsTransactionInterceptor(httpContextAccessor));
+       .AddInterceptors(new RlsTransactionInterceptor(httpContextAccessor, rlsLogger));
 });
 
 // System context factory — used ONLY by background jobs and the AuditLogsController.
@@ -257,6 +258,14 @@ RecurringJob.AddOrUpdate<SlaCheckJob>(
     });
 
 app.MapControllers();
+
+// Test/debug endpoints are only registered in non-Production environments.
+// In Production, any request to /api/test/* returns 404.
+if (!app.Environment.IsProduction())
+{
+    app.MapControllerRoute("test-controller", "api/test/{action=Index}");
+}
+
 app.MapHub<TicketHub>("/hubs/tickets");
 
 // Health endpoint — needed by CI smoke test in Milestone 9

@@ -1,5 +1,6 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Npgsql;
 
 namespace ServiceDesk.Api.Data;
 
@@ -14,10 +15,12 @@ namespace ServiceDesk.Api.Data;
 public class RlsTransactionInterceptor : DbTransactionInterceptor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<RlsTransactionInterceptor> _logger;
 
-    public RlsTransactionInterceptor(IHttpContextAccessor httpContextAccessor)
+    public RlsTransactionInterceptor(IHttpContextAccessor httpContextAccessor, ILogger<RlsTransactionInterceptor> logger)
     {
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     public override DbTransaction TransactionStarted(
@@ -48,12 +51,18 @@ public class RlsTransactionInterceptor : DbTransactionInterceptor
 
         if (string.IsNullOrEmpty(deptClaim) && string.IsNullOrEmpty(roleClaim)) return;
 
+        _logger.LogDebug("Setting RLS context: department_id={DeptId}, role={Role}", deptClaim, roleClaim);
+
         var safeDeptClaim = string.IsNullOrEmpty(deptClaim) ? Guid.Empty.ToString() : deptClaim;
         var safeRoleClaim = string.IsNullOrEmpty(roleClaim) ? "" : roleClaim;
 
         using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
-        cmd.CommandText = $"SELECT set_config('app.current_department_id', '{safeDeptClaim}', true), set_config('app.current_role', '{safeRoleClaim}', true);";
+        cmd.CommandText = "SELECT set_config('app.current_department_id', @dept, true), set_config('app.current_role', @role, true);";
+        var deptParam = new NpgsqlParameter("dept", safeDeptClaim);
+        var roleParam = new NpgsqlParameter("role", safeRoleClaim);
+        cmd.Parameters.Add(deptParam);
+        cmd.Parameters.Add(roleParam);
         cmd.ExecuteNonQuery();
     }
 
@@ -66,21 +75,18 @@ public class RlsTransactionInterceptor : DbTransactionInterceptor
 
         if (string.IsNullOrEmpty(deptClaim) && string.IsNullOrEmpty(roleClaim)) return;
 
-        Console.WriteLine($"[RLS DEBUG] deptClaim: '{deptClaim}', roleClaim: '{roleClaim}'");
-        if (user != null)
-        {
-            foreach (var claim in user.Claims)
-            {
-                Console.WriteLine($"[RLS DEBUG] Claim: {claim.Type} = {claim.Value}");
-            }
-        }
+        _logger.LogDebug("Setting RLS context: department_id={DeptId}, role={Role}", deptClaim, roleClaim);
 
         var safeDeptClaim = string.IsNullOrEmpty(deptClaim) ? Guid.Empty.ToString() : deptClaim;
         var safeRoleClaim = string.IsNullOrEmpty(roleClaim) ? "" : roleClaim;
 
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
-        cmd.CommandText = $"SELECT set_config('app.current_department_id', '{safeDeptClaim}', true), set_config('app.current_role', '{safeRoleClaim}', true);";
+        cmd.CommandText = "SELECT set_config('app.current_department_id', @dept, true), set_config('app.current_role', @role, true);";
+        var deptParam = new NpgsqlParameter("dept", safeDeptClaim);
+        var roleParam = new NpgsqlParameter("role", safeRoleClaim);
+        cmd.Parameters.Add(deptParam);
+        cmd.Parameters.Add(roleParam);
         await cmd.ExecuteNonQueryAsync(ct);
     }
 }

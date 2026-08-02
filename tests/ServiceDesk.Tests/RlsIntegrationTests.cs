@@ -75,14 +75,6 @@ public class RlsIntegrationTests : IAsyncLifetime
         await db.SaveChangesAsync();
 
         // [DEBUG] Check policies
-        using var cmd = db.Database.GetDbConnection().CreateCommand();
-        cmd.CommandText = "SELECT qual FROM pg_policies WHERE tablename = 'Tickets'";
-        await db.Database.OpenConnectionAsync();
-        using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            Console.WriteLine($"[RLS DEBUG] Tickets Policy: {reader.GetString(0)}");
-        }
         await db.Database.CloseConnectionAsync();
 
         _ticketBId = ticketB.Id;
