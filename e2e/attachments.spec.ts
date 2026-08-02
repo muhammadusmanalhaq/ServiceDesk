@@ -46,7 +46,7 @@ test('User can upload an attachment to a ticket', async ({ page }) => {
   expect(regResponse.status()).toBe(200);
 
   // 7. Verify UI updates to show the attachment
-  const attachmentName = page.getByText('test-attachment.txt', { exact: true });
+  const attachmentName = page.getByText('test-attachment.txt', { exact: true }).first();
   await expect(attachmentName).toBeVisible();
 
   // Cleanup

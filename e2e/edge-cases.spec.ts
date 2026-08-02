@@ -91,5 +91,39 @@ test.describe('Edge Case Matrix', () => {
 
     // RLS should completely hide it, returning 404 Not Found
     expect(fetchRes.status()).toBe(404);
+
+    // 5. Alice (Admin) logs in and assigns the ticket to Dan (Agent)
+    const aliceLoginRes = await request.post('http://localhost:5093/api/auth/login', {
+      data: { email: 'alice@test.com', password: 'Password123!' }
+    });
+    const aliceData = await aliceLoginRes.json();
+    const aliceToken = aliceData.accessToken;
+
+    const danLoginRes = await request.post('http://localhost:5093/api/auth/login', {
+      data: { email: 'dan@test.com', password: 'Password123!' }
+    });
+    const danData = await danLoginRes.json();
+    const danToken = danData.accessToken;
+
+    // Alice assigns to Dan
+    const assignRes = await request.post(`http://localhost:5093/api/tickets/${ticket.id}/assign`, {
+      headers: { 'Authorization': `Bearer ${aliceToken}` },
+      data: { userId: danData.userId }
+    });
+    expect(assignRes.ok()).toBeTruthy();
+
+    // 6. Dan tries to forcefully Resolve his own ticket via UpdateStatus backdoor -> Should get 400
+    const resolveAttempt = await request.put(`http://localhost:5093/api/tickets/${ticket.id}/status`, {
+      headers: { 'Authorization': `Bearer ${danToken}` },
+      data: { status: 'Resolved' }
+    });
+    expect(resolveAttempt.status()).toBe(400);
+
+    // 7. Bob tries to modify Dan's ticket -> Should get 403 Forbidden
+    const bobModifyAttempt = await request.put(`http://localhost:5093/api/tickets/${ticket.id}/status`, {
+      headers: { 'Authorization': `Bearer ${bobToken}` },
+      data: { status: 'InProgress' }
+    });
+    expect(bobModifyAttempt.status()).toBe(403);
   });
 });

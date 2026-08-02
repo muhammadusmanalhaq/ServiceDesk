@@ -289,13 +289,14 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
                  <select 
                    value={ticket.status} 
                    onChange={(e) => handleUpdateStatus(e.target.value)}
-                   className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm rounded px-2 py-1 w-full"
+                   disabled={user?.role === "Agent" && ticket.assignedToUserId !== user?.id}
+                   className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm rounded px-2 py-1 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                  >
                    <option value="Open">Open</option>
                    <option value="InProgress">In Progress</option>
-                   <option value="PendingVerification">Pending Verification</option>
-                   <option value="Resolved">Resolved</option>
-                   <option value="Closed">Closed</option>
+                   {ticket.status === "PendingVerification" && <option value="PendingVerification">Pending Verification</option>}
+                   {ticket.status === "Resolved" && <option value="Resolved">Resolved</option>}
+                   {ticket.status === "Closed" && <option value="Closed">Closed</option>}
                  </select>
                  <SlaCountdownBadge slaDeadline={ticket.slaDeadline} isResolved={ticket.status === "Resolved" || ticket.status === "Closed"} />
                </div>
@@ -356,7 +357,7 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
           {ticket.status === "PendingVerification" && (
             <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 space-y-3 bg-teal-50/50 dark:bg-teal-900/10 p-4 rounded-lg -mx-2">
               <h4 className="text-sm font-medium text-teal-900 dark:text-teal-300 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" /> Admin Verification Required
+                <CheckCircle className="w-4 h-4" /> Admin/Manager Verification Required
               </h4>
               <div>
                 <p className="text-xs text-zinc-500 mb-1">Engineer Notes:</p>
@@ -364,7 +365,7 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
                   {ticket.resolutionNote || "No notes provided."}
                 </p>
               </div>
-              {user?.role === "Admin" && (
+              {(user?.role === "Admin" || user?.role === "Manager") && (
                 <button 
                   onClick={handleVerify}
                   disabled={isSubmitting}

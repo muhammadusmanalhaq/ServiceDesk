@@ -97,30 +97,14 @@ test.describe('Exhaustive Ticket Flow Matrix', () => {
     const inProgressColumn = page.locator('div.flex-1:has(h3:has-text("In Progress"))');
     await expect(inProgressColumn.locator(`text=${ticketTitle}`).first()).toBeVisible();
 
-    // Repeat for "Verify" (PendingVerification in code)
-    await page.locator(`text=${ticketTitle}`).first().click();
-    await expect(detailsHeader).toBeVisible();
-    await statusSelect.selectOption('PendingVerification');
-    await expect(page.locator('text="Status updated to Pending Verification"').first()).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('div.flex-1:has(h3:has-text("Verify"))').locator(`text=${ticketTitle}`).first()).toBeVisible();
+    // Removed: Admins can no longer bypass the workflow to submit fixes or force resolve,
+    // so we cannot test moving to PendingVerification or Resolved manually here.
+    // The ticket lifecycle spec covers the full end-to-end multi-user flow.
 
-    // Repeat for "Resolved"
-    await page.locator(`text=${ticketTitle}`).first().click();
-    await expect(detailsHeader).toBeVisible();
-    await statusSelect.selectOption('Resolved');
-    await expect(page.locator('text="Status updated to Resolved"').first()).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('div.flex-1:has(h3:has-text("Resolved"))').locator(`text=${ticketTitle}`).first()).toBeVisible();
-
-    // Repeat for "Closed"
-    await page.locator(`text=${ticketTitle}`).first().click();
-    await expect(detailsHeader).toBeVisible();
-    await statusSelect.selectOption('Closed');
-    await expect(page.locator('text="Status updated to Closed"').first()).toBeVisible();
-    
     // 3. Assignee Modification
-    // Since the modal is still open (we didn't escape Closed yet), we can change the assignee
+    // Re-open the modal to test Assignee modification
+    await page.locator(`text=${ticketTitle}`).first().click();
+    await expect(detailsHeader).toBeVisible();
     // Change the Assignee dropdown to a different user
     // The assignee dropdown is the second select element that contains "Unassigned"
     const assigneeSelect = page.locator('div:has(> h4:has-text("Assignee")) select');

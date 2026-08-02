@@ -70,7 +70,7 @@ test('login, create ticket, move to InProgress, Resolve', async ({ page }) => {
   
   await page.click(`text=${ticketTitle}`);
   
-  await expect(page.locator('text=Admin Verification Required')).toBeVisible();
+  await expect(page.locator('text=Admin/Manager Verification Required')).toBeVisible();
   await page.click('button:has-text("Verify & Close Ticket")');
 
   // Verify it says Resolved

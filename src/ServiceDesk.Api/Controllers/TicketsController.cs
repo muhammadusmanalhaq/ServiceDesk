@@ -168,6 +168,20 @@ public class TicketsController : ControllerBase
             return NotFound();
         }
 
+        // 1. Prevent workflow bypass
+        if (request.Status == "Resolved" || request.Status == "Closed" || request.Status == "PendingVerification")
+        {
+            await transaction.CommitAsync();
+            return BadRequest(new { message = $"Status cannot be manually set to '{request.Status}' via this endpoint. Please use the appropriate workflow endpoints." });
+        }
+
+        // 2. Enforce Agent Ownership
+        if (User.IsInRole("Agent") && ticket.AssignedToUserId != CurrentUserId)
+        {
+            await transaction.CommitAsync();
+            return Forbid();
+        }
+
         ticket.Status = request.Status;
 
         // Check if resolved before deadline
