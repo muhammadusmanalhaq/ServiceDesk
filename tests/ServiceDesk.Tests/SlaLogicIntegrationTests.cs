@@ -58,7 +58,7 @@ public class SlaLogicIntegrationTests : IAsyncLifetime
         using var db = _factory.Services.GetRequiredService<SystemDbContextFactory>().CreateSystemContext();
         var asset = new Asset { Id = Guid.NewGuid(), Name = "Asset1", Status = "Active", DepartmentId = _deptId };
         db.Assets.Add(asset);
-        var ticket = new Ticket { Id = Guid.NewGuid(), Title = "Boundary", Status = "Open", Priority = "High", DepartmentId = _deptId, CreatedAt = DateTime.UtcNow, SlaDeadline = DateTime.UtcNow.AddMinutes(5), SlaBreached = false, AssetId = asset.Id };
+        var ticket = new Ticket { Id = Guid.NewGuid(), Title = "Boundary", Status = "PendingVerification", Priority = "High", DepartmentId = _deptId, CreatedAt = DateTime.UtcNow, SlaDeadline = DateTime.UtcNow.AddMinutes(5), SlaBreached = false, AssetId = asset.Id };
         db.Tickets.Add(ticket);
         await db.SaveChangesAsync();
 
@@ -67,8 +67,8 @@ public class SlaLogicIntegrationTests : IAsyncLifetime
         await db.SaveChangesAsync();
 
         // Act
-        var request = new { Status = "Resolved" };
-        var response = await _client.PutAsJsonAsync($"/api/tickets/{ticket.Id}/status", request);
+        var request = new { Accept = true, ResolutionNote = "Fixed" };
+        var response = await _client.PostAsJsonAsync($"/api/tickets/{ticket.Id}/verify", request);
         response.EnsureSuccessStatusCode();
 
         // Assert
@@ -97,10 +97,14 @@ public class SlaLogicIntegrationTests : IAsyncLifetime
         var reopenResponse = await _client.PutAsJsonAsync($"/api/tickets/{ticket.Id}/status", reopenRequest);
         reopenResponse.EnsureSuccessStatusCode();
 
-        // Act 2: Resolve it again (now it is past the deadline)
-        var resolveRequest = new { Status = "Resolved" };
-        var resolveResponse = await _client.PutAsJsonAsync($"/api/tickets/{ticket.Id}/status", resolveRequest);
-        resolveResponse.EnsureSuccessStatusCode();
+        // Setup 2: Set status to PendingVerification directly so we can hit the verify endpoint
+        ticket.Status = "PendingVerification";
+        await db.SaveChangesAsync();
+
+        // Act 2: Resolve it again via the verify endpoint (now it is past the deadline)
+        var verifyRequest = new { Accept = true, ResolutionNote = "Fixed again" };
+        var verifyResponse = await _client.PostAsJsonAsync($"/api/tickets/{ticket.Id}/verify", verifyRequest);
+        verifyResponse.EnsureSuccessStatusCode();
 
         // Assert
         var updatedTicket = await db.Tickets.FindAsync(ticket.Id);
