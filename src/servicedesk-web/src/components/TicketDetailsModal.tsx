@@ -404,9 +404,31 @@ export function TicketDetailsModal({ isOpen, onClose, onTicketUpdated, ticket, u
                        <Paperclip className="w-4 h-4 text-zinc-500 shrink-0" />
                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{att.fileName}</span>
                      </div>
-                     <button className="text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 p-1 shrink-0" title="Downloading requires SAS from API in real app, but we display the button">
-                        <Download className="w-4 h-4" />
-                     </button>
+                      <button
+                        className="text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 p-1 shrink-0"
+                        title={`Download ${att.fileName}`}
+                        onClick={async () => {
+                          try {
+                            const res = await apiFetch.GET(`/api/attachments/{id}/download-sas` as any, {
+                              params: { path: { id: att.id } }
+                            });
+                            if (res.data && (res.data as any).sasUrl) {
+                              const link = document.createElement("a");
+                              link.href = (res.data as any).sasUrl;
+                              link.download = att.fileName;
+                              link.target = "_blank";
+                              link.rel = "noopener noreferrer";
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }
+                          } catch (err) {
+                            console.error("Download failed", err);
+                          }
+                        }}
+                      >
+                         <Download className="w-4 h-4" />
+                      </button>
                    </li>
                  ))}
                </ul>

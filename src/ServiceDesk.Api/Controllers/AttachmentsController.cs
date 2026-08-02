@@ -97,6 +97,50 @@ public class AttachmentsController : ControllerBase
 
         return Ok(attachment);
     }
+
+    [HttpGet("{id:guid}/download-sas")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetDownloadSas(Guid id)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        // RLS scopes this query to the current user's department automatically
+        var attachment = await _db.Attachments.FindAsync(id);
+
+        await transaction.CommitAsync();
+
+        if (attachment == null) return NotFound(new { error = "Attachment not found." });
+
+        var connectionString = _config["AzureWebJobsStorage"] ?? _config["Storage:ConnectionString"];
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            return BadRequest(new { error = "Storage is not configured." });
+        }
+
+        var blobServiceClient = new BlobServiceClient(connectionString);
+        var containerClient = blobServiceClient.GetBlobContainerClient("attachments");
+        var blobClient = containerClient.GetBlobClient(attachment.BlobPath);
+
+        var sasBuilder = new BlobSasBuilder
+        {
+            BlobContainerName = containerClient.Name,
+            BlobName = blobClient.Name,
+            Resource = "b",
+            StartsOn  = DateTimeOffset.UtcNow.AddMinutes(-2),
+            ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(10),
+        };
+
+        sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+        var sasUri = blobClient.GenerateSasUri(sasBuilder);
+
+        return Ok(new
+        {
+            sasUrl   = sasUri.ToString(),
+            fileName = attachment.FileName
+        });
+    }
 }
 
 public class GenerateSasRequest
