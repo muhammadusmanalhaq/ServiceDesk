@@ -25,6 +25,7 @@ public class MetricsController : ControllerBase
     private bool IsAdmin => User.IsInRole("Admin");
 
     [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(DashboardMetricsResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDashboardMetrics()
     {
         var deptId = CurrentDepartmentId;

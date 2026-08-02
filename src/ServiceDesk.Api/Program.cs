@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,6 +16,7 @@ using ServiceDesk.Api.Hubs;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using ServiceDesk.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,7 +132,16 @@ builder.Services.AddHangfireServer(opt =>
 
 // ─── Controllers + Swagger + SignalR + Validation ──────────────────────────
 builder.Services.AddMemoryCache();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        // Force every DateTime with Kind=Unspecified (returned by Npgsql from
+        // timestamp-without-timezone columns) to serialize as UTC (trailing Z).
+        // This fixes the SLA countdown timezone bug where the frontend parsed
+        // an unzoned string as local time instead of UTC.
+        opts.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+        opts.JsonSerializerOptions.Converters.Add(new UtcNullableDateTimeConverter());
+    });
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddSignalR();
